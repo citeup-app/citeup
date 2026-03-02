@@ -1,8 +1,9 @@
 import { anthropic } from "@ai-sdk/anthropic";
+import { Output, generateText } from "ai";
 import { invariant } from "es-toolkit";
-import { generateObject } from "ai";
 import { z } from "zod";
 import envVars from "~/lib/envVars";
+import prisma from "~/lib/prisma.server";
 
 export const CATEGORIES = [
   {
@@ -20,24 +21,18 @@ export const CATEGORIES = [
   },
 ] as const;
 
-const schema = z.object({
-  queries: z
-    .array(
-      z.object({
-        group: z.enum(["1.discovery", "2.active_search", "3.comparison"]),
-        query: z.string().min(10).max(200),
-      }),
-    )
-    .length(9),
-});
-
 export default async function generateSiteQueries(
   content: string,
 ): Promise<{ group: string; query: string }[]> {
   invariant(envVars.ANTHROPIC_API_KEY, "ANTHROPIC_API_KEY is not set");
-  const { object } = await generateObject({
+  const { output } = await generateText({
     model: anthropic("claude-haiku-4-5-20251001"),
-    schema,
+    output: Output.array({
+      element: z.object({
+        group: z.enum(["1.discovery", "2.active_search", "3.comparison"]),
+        query: z.string().min(10).max(200),
+      }),
+    }),
     messages: [
       {
         role: "system" as const,
@@ -59,5 +54,14 @@ Rules:
       },
     ],
   });
-  return object.queries;
+  return output;
+}
+
+if (require.main === module) {
+  const site = await prisma.site.findFirstOrThrow({
+    where: { domain: "rentail.space" },
+  });
+  invariant(site.content, "Site content is not set");
+  const queries = await generateSiteQueries(site.content);
+  console.log(JSON.stringify(queries, null, 2));
 }
