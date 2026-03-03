@@ -1,18 +1,25 @@
-import { ExternalLinkIcon } from "lucide-react";
 import { Link } from "react-router";
+import { Temporal } from "@js-temporal/polyfill";
 import { ActiveLink } from "~/components/ui/ActiveLink";
 import { Button } from "~/components/ui/Button";
 import {
   Card,
   CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
 } from "~/components/ui/Card";
+import calculateCitationMetrics from "~/lib/llm-visibility/calculateCitationMetrics";
+import { getBotMetrics } from "~/lib/llm-visibility/getBotMetrics.server";
 import { requireUser } from "~/lib/auth.server";
 import prisma from "~/lib/prisma.server";
-import { timeago } from "~/lib/relativeTime";
 import type { Route } from "./+types/route";
+import type { Site } from "~/prisma";
+
+export interface SiteWithMetrics {
+  site: Site;
+  totalCitations: number;
+  avgScore: number;
+  totalBotVisits: number;
+  uniqueBots: number;
+}
 
 export function meta(): Route.MetaDescriptors {
   return [{ title: "Your Sites | CiteUp" }];
@@ -24,7 +31,44 @@ export async function loader({ request }: Route.LoaderArgs) {
     where: { accountId: user.accountId },
     orderBy: { createdAt: "desc" },
   });
-  return { sites };
+
+  // Calculate metrics for each site
+  const sitesWithMetrics: SiteWithMetrics[] = await Promise.all(
+    sites.map(async (site) => {
+      // Get citation metrics
+      const now = Temporal.Now.plainDateISO();
+      const from = now.subtract({ days: 14 });
+
+      const citationRuns = await prisma.citationQueryRun.findMany({
+        include: { queries: true },
+        where: {
+          siteId: site.id,
+          createdAt: {
+            gte: from.toString(),
+          },
+        },
+      });
+
+      const allQueries = citationRuns.flatMap((run) => run.queries);
+      const citationMetrics = calculateCitationMetrics(
+        allQueries,
+        site.domain,
+      );
+
+      // Get bot metrics
+      const botMetrics = await getBotMetrics(site.id, 14);
+
+      return {
+        site,
+        totalCitations: citationMetrics.totalCitations,
+        avgScore: citationMetrics.avgScore,
+        totalBotVisits: botMetrics.totalBotVisits,
+        uniqueBots: botMetrics.uniqueBots,
+      };
+    }),
+  );
+
+  return { sites: sitesWithMetrics };
 }
 
 export default function SitesPage({ loaderData }: Route.ComponentProps) {
@@ -53,35 +97,66 @@ export default function SitesPage({ loaderData }: Route.ComponentProps) {
         <h1 className="font-heading text-3xl">Your Sites</h1>
         <Button render={<Link to="/sites/new" />}>Add Site</Button>
       </div>
-      <ul className="space-y-4">
-        {sites.map((site) => (
-          <li key={site.id}>
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  <span>{site.domain}</span>
-                  <Link target="_blank" to={`https://${site.domain}`}>
-                    <ExternalLinkIcon className="size-4" />
-                  </Link>
-                </CardTitle>
-              </CardHeader>
-
-              <CardContent>
-                <ActiveLink
-                  className="w-full max-w-xs"
-                  size="lg"
-                  to={`/site/${site.id}/citations`}
-                  variant="button"
+      <Card>
+        <CardContent className="p-0">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-black">
+                <th className="px-4 py-2 text-left font-bold">Domain</th>
+                <th className="px-4 py-2 text-right font-bold">Citations</th>
+                <th className="px-4 py-2 text-right font-bold">Avg Score</th>
+                <th className="px-4 py-2 text-right font-bold">Bot Visits</th>
+                <th className="px-4 py-2 text-right font-bold">Unique Bots</th>
+                <th className="px-4 py-2 text-right font-bold">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sites.map((item, idx) => (
+                <tr
+                  key={item.site.id}
+                  className={idx < sites.length - 1 ? "border-b border-gray-200" : ""}
                 >
-                  View Site
-                </ActiveLink>
-              </CardContent>
-
-              <CardFooter>Added {timeago(site.createdAt)}</CardFooter>
-            </Card>
-          </li>
-        ))}
-      </ul>
+                  <td className="px-4 py-2">
+                    <span className="font-medium">{item.site.domain}</span>
+                  </td>
+                  <td className="px-4 py-2 text-right">
+                    {item.totalCitations}
+                  </td>
+                  <td className="px-4 py-2 text-right">
+                    {item.avgScore.toFixed(1)}
+                  </td>
+                  <td className="px-4 py-2 text-right">
+                    {item.totalBotVisits}
+                  </td>
+                  <td className="px-4 py-2 text-right">
+                    {item.uniqueBots}
+                  </td>
+                  <td className="px-4 py-2 text-right">
+                    <div className="flex gap-2 justify-end">
+                      <ActiveLink
+                        size="sm"
+                        to={`/site/${item.site.id}/citations`}
+                        variant="button"
+                      >
+                        View
+                      </ActiveLink>
+                      <button
+                        type="button"
+                        className="text-sm text-red-600 hover:underline"
+                        onClick={() => {
+                          // Will implement delete in Task 5
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
     </main>
   );
 }
