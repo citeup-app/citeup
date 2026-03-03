@@ -10,7 +10,6 @@ backup.sql
 
 # Vercel
 .vercel/*
-!.vercel/vercel.json
 .env*.local
 
 # Ignore test results
