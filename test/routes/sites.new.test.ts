@@ -147,16 +147,13 @@ describe("add site", () => {
         await page.getByRole("button", { name: "Add Site" }).click();
 
         // Phase 1 may return a review screen (if suggestions generated) or navigate directly
-        await Promise.race([
-          page.waitForURL("**/site/**", { timeout: 55_000 }),
-          page.getByRole("link", { name: "Skip" }).waitFor({ timeout: 55_000 }),
-        ]);
+        await page.getByRole("link", { name: "Skip" }).waitFor();
 
         // If review screen is shown, click Skip to proceed to site page
         const skipLink = page.getByRole("link", { name: "Skip" });
         if (await skipLink.isVisible()) {
           await skipLink.click();
-          await page.waitForURL("**/site/**", { timeout: 10_000 });
+          await page.waitForURL("**/site/**");
         }
 
         expect(new URL(page.url()).pathname).toMatch(/^\/site\//);
