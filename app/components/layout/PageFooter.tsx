@@ -1,3 +1,4 @@
+import { HeartIcon } from "lucide-react";
 import { Link, NavLink } from "react-router";
 import CiteUpIcon from "./CiteUpLogo";
 
@@ -33,8 +34,10 @@ export default function PageFooter() {
             Monitor AI citation visibility for your brand. Built for small
             businesses and seasonal sellers. AI powered.
           </p>
-          <p className="font-medium">
-            © {new Date().getFullYear()} citeup.com. All rights reserved.
+          <p className="flex flex-row items-center gap-1 font-medium">
+            © {new Date().getFullYear()} citeup.com
+            <HeartIcon className="h-4 w-4 text-red-500" fill="currentColor" />
+            Made in Los Angeles, CA.
           </p>
         </div>
         <SocialLinks />
