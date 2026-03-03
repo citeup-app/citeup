@@ -2,12 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import generateSiteQueries from "~/lib/llm-visibility/generateSiteQueries";
 
 vi.mock("ai", () => ({ generateText: vi.fn(), Output: { array: vi.fn() } }));
-vi.mock("@ai-sdk/anthropic", () => ({
-  anthropic: vi.fn().mockReturnValue("mock-model"),
+vi.mock("~/lib/llm-visibility/anthropic", () => ({
+  haiku: "mock-haiku-model",
 }));
-vi.mock("~/lib/envVars", () => ({
-  default: { ANTHROPIC_API_KEY: "test-key" },
-}));
+vi.mock("~/lib/prisma.server", () => ({ default: {} }));
 
 const MOCK_QUERIES = [
   { group: "1.discovery", query: "How do I find short-term retail space?" },

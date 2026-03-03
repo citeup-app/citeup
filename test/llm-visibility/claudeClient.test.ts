@@ -16,6 +16,10 @@ vi.mock("@ai-sdk/anthropic", () => {
   return { anthropic };
 });
 
+vi.mock("~/lib/llm-visibility/anthropic", () => ({
+  haiku: "mock-haiku-model",
+}));
+
 vi.mock("ai", () => ({
   generateText: vi.fn(),
 }));
