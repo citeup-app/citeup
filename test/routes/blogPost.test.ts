@@ -66,6 +66,7 @@ describe("Blog Post Rendering", () => {
   });
 
   it("should match visual regression test", async () => {
+    await page.setViewportSize({ width: 1024, height: 667 });
     await expect(page.locator("article")).toMatchScreenshot();
   });
 
