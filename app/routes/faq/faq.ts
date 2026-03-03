@@ -20,7 +20,7 @@ export default [
       {
         question: "How do I get started?",
         answer:
-          "Create an account, add your domain, and we'll start running your queries across all supported platforms. Your first results appear within 24 hours.",
+          "Create an account and add your domain. We read your site content and suggest 9 queries instantly — you can start monitoring in under a minute without writing a single query yourself. Your first results appear within 24 hours.",
       },
     ],
   },
@@ -43,9 +43,14 @@ export default [
           "A citation is any URL that appears in an AI platform's response to a query. We record the full list of cited URLs and check whether your domain appears — and at what position.",
       },
       {
+        question: "Do I have to write my own queries?",
+        answer:
+          "No. When you add a site, CiteUp reads your page content and automatically suggests 9 queries across three intent categories: discovery (users who don't know your brand yet), active search (users looking for exactly what you offer), and comparison (users evaluating their options). You can use them as-is, edit them, or add your own.",
+      },
+      {
         question: "Can I customize the search queries?",
         answer:
-          "Yes. You define the queries that matter to your business. These are the questions your target audience is likely asking AI platforms.",
+          "Yes. You have full control. Add queries, edit the suggested ones, delete ones that aren't relevant, and organize them into named groups. The suggestions are a starting point — you know your audience best.",
       },
     ],
   },

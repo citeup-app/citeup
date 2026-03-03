@@ -136,13 +136,13 @@ const STEPS = [
   {
     number: "1",
     title: "Add your website",
-    body: "Enter your domain. We verify it exists and pull your page content so we can understand what your site is about.",
+    body: "Enter your domain. We read your content and instantly suggest 9 ready-to-run queries — covering discovery, comparison, and direct searches — so you're tracking in under a minute. No setup required.",
     icon: Globe,
   },
   {
     number: "2",
     title: "We run the queries",
-    body: "Each week we run your configured search queries across every major AI platform with web search enabled.",
+    body: "Each week we run your queries across every major AI platform with web search enabled — the same experience your potential customers have.",
     icon: Search,
   },
   {
