@@ -34,8 +34,8 @@ describe("generateBotInsight", () => {
     const messages = call.messages as { role: string; content: string }[];
     const userMsg = messages.find((m) => m.role === "user");
     expect(userMsg?.content).toContain("Domain: mysite.com");
-    expect(userMsg?.content).toContain("Claude: 5 visits");
-    expect(userMsg?.content).toContain("Perplexity: 12 visits");
+    expect(userMsg?.content).toContain("- Claude: 5 visits. Top pages: /about");
+    expect(userMsg?.content).toContain("- Perplexity: 12 visits. Top pages: /, /faq");
   });
 
   it("propagates errors from generateText", async () => {
