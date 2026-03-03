@@ -1,4 +1,4 @@
-import { Tabs as BaseUITabs } from "@base-ui/react/tabs";
+import { Tabs as BaseUITabs } from "@base-ui/react";
 import * as React from "react";
 import { twMerge } from "tailwind-merge";
 

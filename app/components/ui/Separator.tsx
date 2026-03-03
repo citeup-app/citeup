@@ -1,4 +1,4 @@
-import { Separator as BaseUISeparator } from "@base-ui/react/separator";
+import { Separator as BaseUISeparator } from "@base-ui/react";
 import type * as React from "react";
 import { twMerge } from "tailwind-merge";
 
