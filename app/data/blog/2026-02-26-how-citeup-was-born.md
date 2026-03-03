@@ -7,7 +7,7 @@ summary: "CiteUp started as a side question while building Rentail: are AI platf
 
 CiteUp started with a simple, nagging question: is ChatGPT citing Rentail?
 
-I'd been building [Rentail](https://rentail.space)—a platform that helps specialty retailers find temporary space in shopping centers. The SEO was solid. Google ranked us well. But something felt off. More and more users were saying they found us through ChatGPT or Perplexity. And I had no idea whether that was accurate, consistent, or growing.
+I'm building [Rentail](https://rentail.space)—a platform that helps specialty retailers find temporary space in shopping centers. The SEO was solid. Google ranked us well. But something felt off. More and more users were saying they found us through ChatGPT or Perplexity. And I had no idea whether that was accurate, consistent, or growing.
 
 ## The Question Nobody Could Answer
 
