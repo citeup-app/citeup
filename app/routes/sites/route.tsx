@@ -1,27 +1,16 @@
-import { useState, useEffect } from "react";
-import { Link, useFetcher } from "react-router";
 import { Temporal } from "@js-temporal/polyfill";
+import { AlertCircleIcon } from "lucide-react";
+import { Link, useFetcher } from "react-router";
 import { ActiveLink } from "~/components/ui/ActiveLink";
+import { Alert, AlertTitle } from "~/components/ui/Alert";
 import { Button } from "~/components/ui/Button";
-import {
-  Card,
-  CardContent,
-} from "~/components/ui/Card";
+import { Card, CardContent } from "~/components/ui/Card";
+import { requireUser } from "~/lib/auth.server";
 import calculateCitationMetrics from "~/lib/llm-visibility/calculateCitationMetrics";
 import { getBotMetrics } from "~/lib/llm-visibility/getBotMetrics.server";
-import { requireUser } from "~/lib/auth.server";
 import prisma from "~/lib/prisma.server";
 import type { Route } from "./+types/route";
-import type { Site } from "~/prisma";
 import DeleteSiteDialog from "./DeleteSiteDialog";
-
-export interface SiteWithMetrics {
-  site: Site;
-  totalCitations: number;
-  avgScore: number;
-  totalBotVisits: number;
-  uniqueBots: number;
-}
 
 export function meta(): Route.MetaDescriptors {
   return [{ title: "Your Sites | CiteUp" }];
@@ -35,27 +24,20 @@ export async function loader({ request }: Route.LoaderArgs) {
   });
 
   // Calculate metrics for each site
-  const sitesWithMetrics: SiteWithMetrics[] = await Promise.all(
+  const sitesWithMetrics = await Promise.all(
     sites.map(async (site) => {
       // Get citation metrics
-      const now = Temporal.Now.plainDateISO();
-      const from = now.subtract({ days: 14 });
+      const gte = new Date(
+        Temporal.Now.plainDateISO().subtract({ days: 14 }).toJSON(),
+      );
 
       const citationRuns = await prisma.citationQueryRun.findMany({
         include: { queries: true },
-        where: {
-          siteId: site.id,
-          createdAt: {
-            gte: from.toString(),
-          },
-        },
+        where: { siteId: site.id, createdAt: { gte } },
       });
 
       const allQueries = citationRuns.flatMap((run) => run.queries);
-      const citationMetrics = calculateCitationMetrics(
-        allQueries,
-        site.domain,
-      );
+      const citationMetrics = calculateCitationMetrics(allQueries, site.domain);
 
       // Get bot metrics
       const botMetrics = await getBotMetrics(site.id, 14);
@@ -74,53 +56,28 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
-  if (request.method !== "POST") {
-    return { ok: false, error: "Method not allowed" } as const;
-  }
+  if (request.method !== "DELETE")
+    throw new Response("Method not allowed", { status: 405 });
 
   const user = await requireUser(request);
   const formData = await request.formData();
-  const siteId = formData.get("siteId") as string;
-  const confirmDomain = formData.get("confirmDomain") as string;
+  const siteId = formData.get("siteId")?.toString();
 
   // Verify site exists and belongs to user
   const site = await prisma.site.findFirst({
     where: { id: siteId, accountId: user.accountId },
   });
-
-  if (!site) {
-    return { ok: false, error: "Site not found" } as const;
-  }
-
-  // Verify domain matches
-  if (confirmDomain !== site.domain) {
-    return { ok: false, error: "Domain doesn't match" } as const;
-  }
+  if (!site) return { ok: false, error: "Site not found" };
 
   // Delete the site (cascades delete all related data)
   await prisma.site.delete({ where: { id: siteId } });
-
-  return { ok: true } as const;
+  return { ok: true };
 }
 
 export default function SitesPage({ loaderData }: Route.ComponentProps) {
   const { sites } = loaderData;
-
-  const [deleteDialog, setDeleteDialog] = useState<{
-    open: boolean;
-    siteId: string;
-    domain: string;
-  }>({ open: false, siteId: "", domain: "" });
-
   const deleteFetcher = useFetcher<typeof action>();
   const isSubmitting = deleteFetcher.state === "submitting";
-
-  // Close dialog on successful delete
-  useEffect(() => {
-    if (deleteFetcher.data?.ok) {
-      setDeleteDialog({ open: false, siteId: "", domain: "" });
-    }
-  }, [deleteFetcher.data]);
 
   if (sites.length === 0) {
     return (
@@ -145,92 +102,73 @@ export default function SitesPage({ loaderData }: Route.ComponentProps) {
         <h1 className="font-heading text-3xl">Your Sites</h1>
         <Button render={<Link to="/sites/new" />}>Add Site</Button>
       </div>
-      {deleteFetcher.data?.ok === false && (
-        <div className="bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded-base">
-          {deleteFetcher.data.error}
-        </div>
+      {deleteFetcher.data?.error && (
+        <Alert variant="destructive">
+          <AlertCircleIcon className="h-4 w-4" />
+          <AlertTitle>{deleteFetcher.data.error}</AlertTitle>
+        </Alert>
       )}
+
       <Card>
-        <CardContent className="p-0">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-black">
-                <th className="px-4 py-2 text-left font-bold">Domain</th>
-                <th className="px-4 py-2 text-right font-bold">Citations</th>
-                <th className="px-4 py-2 text-right font-bold">Avg Score</th>
-                <th className="px-4 py-2 text-right font-bold">Bot Visits</th>
-                <th className="px-4 py-2 text-right font-bold">Unique Bots</th>
-                <th className="px-4 py-2 text-right font-bold">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sites.map((item, idx) => (
-                <tr
-                  key={item.site.id}
-                  className={idx < sites.length - 1 ? "border-b border-gray-200" : ""}
+        <CardContent className="space-y-4 divide-y-2 divide-black/10">
+          {sites.map((item) => (
+            <div
+              className={
+                "block py-4 first:pt-0 last:pb-0" // preserve space-y-4 effect; optional
+              }
+              key={item.site.id}
+            >
+              <p className="flex flex-row items-center justify-between">
+                <Link
+                  to={`/site/${item.site.id}/citations`}
+                  className="w-full font-bold font-mono text-lg"
                 >
-                  <td className="px-4 py-2">
-                    <span className="font-medium">{item.site.domain}</span>
-                  </td>
-                  <td className="px-4 py-2 text-right">
-                    {item.totalCitations}
-                  </td>
-                  <td className="px-4 py-2 text-right">
-                    {item.avgScore.toFixed(1)}
-                  </td>
-                  <td className="px-4 py-2 text-right">
-                    {item.totalBotVisits}
-                  </td>
-                  <td className="px-4 py-2 text-right">
-                    {item.uniqueBots}
-                  </td>
-                  <td className="px-4 py-2 text-right">
-                    <div className="flex gap-2 justify-end">
-                      <ActiveLink
-                        size="sm"
-                        to={`/site/${item.site.id}/citations`}
-                        variant="button"
-                      >
-                        View
-                      </ActiveLink>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setDeleteDialog({
-                            open: true,
-                            siteId: item.site.id,
-                            domain: item.site.domain,
-                          })
-                        }
-                        className="text-sm text-red-600 hover:underline"
-                        disabled={isSubmitting}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  {item.site.domain}
+                </Link>
+                <DeleteSiteDialog
+                  domain={item.site.domain}
+                  onConfirm={() => {
+                    deleteFetcher.submit(
+                      { siteId: item.site.id },
+                      { method: "DELETE" },
+                    );
+                  }}
+                  isSubmitting={isSubmitting}
+                />
+              </p>
+              <Link
+                to={`/site/${item.site.id}/citations`}
+                className="mt-4 grid grid-cols-4 gap-4 text-center"
+              >
+                <div>
+                  <p className="font-light">Citations</p>
+                  <p className="font-bold text-3xl">
+                    {item.totalCitations.toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-light">Avg Score</p>
+                  <p className="font-bold text-3xl">
+                    {item.avgScore.toFixed(1).toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-light">Bot Visits</p>
+                  <p className="font-bold text-3xl">
+                    {item.totalBotVisits.toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-light">Unique Bots</p>
+                  <p className="font-bold text-3xl">
+                    {item.uniqueBots.toLocaleString()}
+                  </p>
+                </div>
+              </Link>
+            </div>
+          ))}
         </CardContent>
       </Card>
-      <DeleteSiteDialog
-        isOpen={deleteDialog.open}
-        domain={deleteDialog.domain}
-        siteId={deleteDialog.siteId}
-        onClose={() => setDeleteDialog({ open: false, siteId: "", domain: "" })}
-        onConfirm={(siteId) => {
-          deleteFetcher.submit(
-            {
-              siteId,
-              confirmDomain: deleteDialog.domain,
-            },
-            { method: "POST" },
-          );
-        }}
-        isSubmitting={isSubmitting}
-      />
     </main>
   );
 }

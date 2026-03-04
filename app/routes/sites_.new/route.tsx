@@ -1,7 +1,8 @@
 import { captureException } from "@sentry/react-router";
 import { PlusIcon, TrashIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Link, redirect, useFetcher, useNavigate } from "react-router";
+import { redirect, useFetcher, useNavigate } from "react-router";
+import { ActiveLink } from "~/components/ui/ActiveLink";
 import { Button } from "~/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/Card";
 import { Field, FieldError, FieldLabel } from "~/components/ui/FieldSet";
@@ -239,8 +240,9 @@ function ReviewScreen({
                   {items.map(({ query, id }, pos) => (
                     <li key={id} className="flex items-center gap-2">
                       <Input
+                        variant="ghost"
                         aria-label={`${group} — query ${pos + 1}`}
-                        className="flex-1 text-base"
+                        className="flex-1"
                         value={query}
                         onChange={(e) => updateQuery(id, e.target.value)}
                       />
@@ -271,19 +273,19 @@ function ReviewScreen({
         })}
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between gap-4">
         <Button
           onClick={handleSave}
           disabled={nonEmpty.length === 0 || isProcessing}
         >
           {isProcessing ? "Saving…" : "Save queries"}
         </Button>
-        <Link
+        <ActiveLink
           to={`/site/${siteId}`}
           className="text-base text-foreground/60 underline"
         >
           Skip
-        </Link>
+        </ActiveLink>
       </div>
     </main>
   );
