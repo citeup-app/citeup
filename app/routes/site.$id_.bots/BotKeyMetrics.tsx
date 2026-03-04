@@ -25,8 +25,10 @@ export default function BotKeyMetrics({
         },
       ].map(({ label, value }) => (
         <Card key={label}>
-          <CardHeader>
-            <CardDescription>{label}</CardDescription>
+          <CardHeader className="text-center">
+            <CardDescription className="text-foreground/60">
+              {label}
+            </CardDescription>
             <CardTitle>{value}</CardTitle>
           </CardHeader>
         </Card>
