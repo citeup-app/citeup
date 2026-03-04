@@ -17,3 +17,4 @@ __screenshots__/*.diff.png
 __screenshots__/*.new.png
 __screenshots__/*.new.html
 __screenshots__/*.html.diff
+test-results/

@@ -1,21 +1,30 @@
 import { format } from "node:util";
 
+const ignore = [
+  // React hydration warnings from Playwright interactions
+  "A tree hydrated but some attributes",
+  "hydration mismatch",
+  // Vite HMR manifest patch failures (dev server interruptions)
+  "Failed to fetch manifest patches",
+  "fetchAndApplyManifestPatches",
+  // Vite optimize dep warnings (dev server interruptions)
+  "status of 504 (Outdated Optimize Dep)",
+  // React DevTools warnings
+  "Download the React DevTools",
+  // Browser network errors
+  "Failed to load resource",
+  "blocking stylesheet: fonts.googleapis.com",
+];
+
 /**
  * Suppress expected browser warnings in tests - these don't affect functionality
  */
 const originalConsoleError = console.error;
-console.error = (...args: unknown[]) => {
+const trimConsole = (...args: unknown[]) => {
   const message = format(...args);
-  if (
-    // React hydration warnings from Playwright interactions
-    message.includes("A tree hydrated but some attributes") ||
-    message.includes("hydration mismatch") ||
-    // Vite HMR manifest patch failures (dev server interruptions)
-    message.includes("Failed to fetch manifest patches") ||
-    message.includes("fetchAndApplyManifestPatches") ||
-    // Vite optimize dep warnings (dev server interruptions)
-    message.includes("status of 504 (Outdated Optimize Dep)")
-  )
-    return; // Suppress expected console.error messages
+  if (ignore.find((ignoredMessage) => message.includes(ignoredMessage))) return;
   originalConsoleError(...args);
 };
+console.error = trimConsole;
+
+export default trimConsole;

@@ -1,7 +1,14 @@
+import debug from "debug";
 import dotenv from "dotenv";
 import env from "env-var";
 
-dotenv.configDotenv({ quiet: true });
+const envFile = process.env.NODE_ENV === "test" ? ".env.test" : ".env";
+console.log("📁 Loading env file:", envFile, "NODE_ENV:", process.env.NODE_ENV);
+dotenv.config({
+  path: envFile,
+  override: true,
+  quiet: true,
+});
 
 const envVars = {
   ANTHROPIC_API_KEY: env.get("ANTHROPIC_API_KEY").required(false).asString(),
@@ -21,5 +28,12 @@ const envVars = {
   RESEND_API_KEY: env.get("RESEND_API_KEY").required(false).asString(),
   SESSION_SECRET: env.get("SESSION_SECRET").required().asString(),
 };
+
+const logger = debug("server");
+
+logger(
+  "✅ envVars.ts loaded ANTHROPIC_API_KEY =",
+  envVars.ANTHROPIC_API_KEY?.substring(0, 10),
+);
 
 export default envVars;

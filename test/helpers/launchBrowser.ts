@@ -9,6 +9,7 @@ import {
   type Route,
   chromium,
 } from "playwright";
+import trimConsole from "./trimConsole";
 
 export const port = 9222;
 
@@ -61,15 +62,8 @@ export async function newContext(): Promise<BrowserContext> {
   context.setGeolocation({ latitude: 33.74901, longitude: -118.1956 });
   context.route("**", blockOutgoingRequests);
   context
-    .on("console", (msg) => {
-      if (msg.text().includes("Download the React DevTools")) return;
-      if (msg.text().includes("Failed to load resource")) return;
-      else if (msg.type() === "error") console.error(msg.text());
-      else logger("%s: %s", msg.type(), msg.text());
-    })
-    .on("weberror", (error) => {
-      logger("error: %s", error.error);
-    });
+    .on("console", (msg) => trimConsole(msg.text()))
+    .on("weberror", (error) => logger("error: %s", error.error));
 
   // Set navigation timeout to 5s less than hook timeout for better error messages
   context.setDefaultNavigationTimeout(ms("10s"));
