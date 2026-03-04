@@ -6,8 +6,8 @@ import { requireUser } from "~/lib/auth.server";
 import generateSiteQueries from "~/lib/llm-visibility/generateSiteQueries";
 import prisma from "~/lib/prisma.server";
 import type { Route } from "./+types/route";
-import AddGroup from "./AddGroup";
-import GroupSection from "./GroupSection";
+import AddGroup from "./QueriesAddGroup";
+import QueriesGroup from "./QueriesGroup";
 import SuggestedQueries from "./SuggestedQueries";
 
 export function meta({ data }: Route.MetaArgs) {
@@ -146,7 +146,7 @@ export default function SiteQueriesPage({ loaderData }: Route.ComponentProps) {
           </div>
         ) : (
           groups.map(([group, queries]) => (
-            <GroupSection key={group} group={group} queries={queries} />
+            <QueriesGroup key={group} group={group} queries={queries} />
           ))
         )}
 

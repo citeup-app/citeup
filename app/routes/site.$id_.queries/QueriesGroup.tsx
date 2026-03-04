@@ -5,10 +5,10 @@ import { Alert, AlertTitle } from "~/components/ui/Alert";
 import { Button } from "~/components/ui/Button";
 import { Card, CardContent, CardFooter } from "~/components/ui/Card";
 import { Input } from "~/components/ui/Input";
-import QueryRow from "./QueryRow";
+import SingleQuery from "./SingleQuery";
 import type { action } from "./route";
 
-export default function GroupSection({
+export default function QueriesGroup({
   group,
   queries,
 }: {
@@ -58,7 +58,7 @@ export default function GroupSection({
         <div className="flex items-center gap-2">
           <Input
             aria-label="Group name"
-            className="h-auto flex-1 rounded-none border-x-0 border-t-0 border-b-2 bg-transparent px-1 py-0.5 font-heading text-lg shadow-none hover:border-border focus-visible:translate-x-0 focus-visible:translate-y-0 focus-visible:border-border focus-visible:shadow-none"
+            variant="ghost"
             value={groupName}
             onChange={(e) => setGroupName(e.target.value)}
             onBlur={() => {
@@ -97,7 +97,7 @@ export default function GroupSection({
 
         <ul className="space-y-0.5">
           {queries.map((q) => (
-            <QueryRow key={q.id} query={q} />
+            <SingleQuery key={q.id} id={q.id} group={q.group} query={q.query} />
           ))}
         </ul>
       </CardContent>

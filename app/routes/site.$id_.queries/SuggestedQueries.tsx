@@ -8,6 +8,13 @@ import { Button } from "~/components/ui/Button";
 import { Card, CardContent } from "~/components/ui/Card";
 import type { action } from "./route";
 
+/**
+ * A component that displays suggested queries for a site. Starts with a button
+ * to suggest queries, and then displays the suggestions if they are available.
+ *
+ * @param hasContent - Whether the site has content
+ * @returns A component that displays suggested queries
+ */
 export default function SuggestedQueries({
   hasContent,
 }: {
@@ -41,26 +48,6 @@ export default function SuggestedQueries({
 
   return (
     <div className="space-y-3">
-      {!suggestions && (
-        <div className="flex justify-end">
-          <Button
-            variant="outline"
-            size="sm"
-            type="button"
-            disabled={isLoading}
-            onClick={() => {
-              setDismissed(false);
-              fetcher.submit({ _intent: "suggest" }, { method: "post" });
-            }}
-          >
-            <SparklesIcon
-              className={twMerge(isLoading ? "animate-spin" : "", "size-4")}
-            />
-            {isLoading ? "Generating…" : "Suggest queries"}
-          </Button>
-        </div>
-      )}
-
       {error && (
         <Alert variant="outline">
           <AlertCircleIcon className="h-4 w-4" />
@@ -68,45 +55,68 @@ export default function SuggestedQueries({
         </Alert>
       )}
 
-      {suggestions && (
-        <Card>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <p className="font-semibold text-base">Suggested queries</p>
-              <Button
-                variant="ghost"
-                size="sm"
-                type="button"
-                onClick={() => setDismissed(true)}
-                aria-label="Dismiss suggestions"
-              >
-                <XIcon className="h-4 w-4" />
-              </Button>
-            </div>
-
-            {Object.entries(groupedSuggestions).map(([group, items]) => {
-              if (items.length === 0) return null;
-              return (
-                <div key={group} className="space-y-1">
-                  <p className="text-base text-foreground/50 uppercase tracking-wide">
-                    {group}
-                  </p>
-                  <ul className="space-y-2">
-                    {items.map((s) => (
-                      <SuggestionRow key={s.query} suggestion={s} />
-                    ))}
-                  </ul>
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
+      {suggestions ? (
+        <AllSuggestions
+          groupedSuggestions={groupedSuggestions}
+          setDismissed={setDismissed}
+        />
+      ) : (
+        <AskForSuggestionsButton
+          isLoading={isLoading}
+          suggestQueries={() => {
+            setDismissed(false);
+            fetcher.submit({ _intent: "suggest" }, { method: "post" });
+          }}
+        />
       )}
     </div>
   );
 }
 
-function SuggestionRow({
+function AllSuggestions({
+  groupedSuggestions,
+  setDismissed,
+}: {
+  groupedSuggestions: Record<string, { group: string; query: string }[]>;
+  setDismissed: (dismissed: boolean) => void;
+}) {
+  return (
+    <Card>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between">
+          <p className="font-semibold text-base">Suggested queries</p>
+          <Button
+            variant="ghost"
+            size="sm"
+            type="button"
+            onClick={() => setDismissed(true)}
+            aria-label="Dismiss suggestions"
+          >
+            <XIcon className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {Object.entries(groupedSuggestions).map(([group, items]) => {
+          if (items.length === 0) return null;
+          return (
+            <div key={group} className="space-y-1">
+              <p className="text-base text-foreground/50 uppercase tracking-wide">
+                {group}
+              </p>
+              <ul className="space-y-2">
+                {items.map((s) => (
+                  <SingleSuggestion key={s.query} suggestion={s} />
+                ))}
+              </ul>
+            </div>
+          );
+        })}
+      </CardContent>
+    </Card>
+  );
+}
+
+function SingleSuggestion({
   suggestion,
 }: {
   suggestion: { group: string; query: string };
@@ -136,5 +146,30 @@ function SuggestionRow({
         {added ? "Added" : <PlusIcon className="h-3 w-3" />}
       </Button>
     </li>
+  );
+}
+
+function AskForSuggestionsButton({
+  isLoading,
+  suggestQueries,
+}: {
+  isLoading: boolean;
+  suggestQueries: () => void;
+}) {
+  return (
+    <div className="flex justify-end">
+      <Button
+        variant="outline"
+        size="sm"
+        type="button"
+        disabled={isLoading}
+        onClick={suggestQueries}
+      >
+        <SparklesIcon
+          className={twMerge(isLoading ? "animate-spin" : "", "size-4")}
+        />
+        {isLoading ? "Generating…" : "Suggest queries"}
+      </Button>
+    </div>
   );
 }

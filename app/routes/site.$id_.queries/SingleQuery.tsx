@@ -6,30 +6,32 @@ import { Button } from "~/components/ui/Button";
 import { Input } from "~/components/ui/Input";
 import type { action } from "./route";
 
-type SiteQueryRow = {
+export default function SingleQuery({
+  id,
+  group,
+  query,
+}: {
   id: string;
   group: string;
   query: string;
-};
-
-export default function QueryRow({ query }: { query: SiteQueryRow }) {
+}) {
   const updateFetcher = useFetcher<typeof action>();
   const deleteFetcher = useFetcher<typeof action>();
-  const [value, setValue] = useState(query.query);
+  const [value, setValue] = useState(query);
 
   return (
     <li className="group/row space-y-0.5">
       <div className="flex items-center gap-1">
         <Input
           aria-label="Query text"
-          className="h-auto flex-1 border-transparent bg-transparent px-2 py-1 text-base shadow-none hover:border-border focus-visible:translate-x-0 focus-visible:translate-y-0 focus-visible:border-border focus-visible:shadow-none"
+          variant="ghost"
           placeholder="Enter query…"
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onBlur={() => {
-            if (value === query.query) return;
+            if (value === query) return;
             updateFetcher.submit(
-              { _intent: "update-query", id: query.id, query: value },
+              { _intent: "update-query", id, query: value },
               { method: "post" },
             );
           }}
@@ -45,7 +47,7 @@ export default function QueryRow({ query }: { query: SiteQueryRow }) {
                 if (input) input.focus();
               } else {
                 updateFetcher.submit(
-                  { _intent: "add-query", group: query.group },
+                  { _intent: "add-query", group },
                   { method: "post" },
                 );
                 // Defer focus until after submit; we can't focus new input synchronously.
@@ -77,11 +79,11 @@ export default function QueryRow({ query }: { query: SiteQueryRow }) {
           onClick={() => {
             if (
               confirm(
-                `Delete query "${query.query}" from group "${query.group}"? This cannot be undone.`,
+                `Delete query "${query}" from group "${group}"? This cannot be undone.`,
               )
             )
               deleteFetcher.submit(
-                { _intent: "delete-query", id: query.id },
+                { _intent: "delete-query", id },
                 { method: "post" },
               );
           }}
