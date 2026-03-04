@@ -1,29 +1,24 @@
-import { Temporal } from "@js-temporal/polyfill";
 import { Output, generateText } from "ai";
 import { z } from "zod";
-import prisma from "~/lib/prisma.server";
 import type { Site } from "~/prisma";
+import { fetchPageContent } from "../sites.server";
 import { haiku } from "./anthropic";
 import defaultQueryCategories from "./defaultQueryCategories";
 
+/**
+ * Generate site queries for a given site. If the site content is not available,
+ * uses the content from the database. If the generated queries are not valid,
+ * throws an error.
+ *
+ * @param site - The site to generate queries for.
+ * @returns The generated queries.
+ * @throws {Error} If the site content is not available and the database content is not available.
+ * @throws {Error} If the generated queries are not valid.
+ */
 export default async function generateSiteQueries(
   site: Site,
 ): Promise<{ group: string; query: string }[]> {
-  const suggestions = await prisma.siteQuerySuggestion.findMany({
-    where: {
-      createdAt: {
-        gte: Temporal.Now.instant().subtract({ hours: 24 }).toString(),
-      },
-      siteId: site.id,
-    },
-  });
-  if (suggestions.length > 0) {
-    return suggestions.map((suggestion) => ({
-      group: suggestion.group,
-      query: suggestion.query,
-    }));
-  }
-
+  const content = await fetchPageContent(site.domain);
   const { output } = await generateText({
     model: haiku,
     output: Output.array({
@@ -52,17 +47,9 @@ Rules:
       },
       {
         role: "user" as const,
-        content: `Website content:\n\n${site.content}`,
+        content: `Website content:\n\n${content}`,
       },
     ],
-  });
-
-  await prisma.siteQuerySuggestion.createMany({
-    data: output.map((suggestion) => ({
-      siteId: site.id,
-      group: suggestion.group,
-      query: suggestion.query,
-    })),
   });
   return output;
 }

@@ -11,11 +11,7 @@ import { requireUser } from "~/lib/auth.server";
 import defaultQueryCategories from "~/lib/llm-visibility/defaultQueryCategories";
 import generateSiteQueries from "~/lib/llm-visibility/generateSiteQueries";
 import prisma from "~/lib/prisma.server";
-import {
-  extractDomain,
-  fetchPageContent,
-  verifyDomain,
-} from "~/lib/sites.server";
+import { addSiteToAccount } from "~/lib/sites.server";
 import type { Route } from "./+types/route";
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -73,33 +69,14 @@ export async function action({
   }
 
   // Phase 1: validate + create site + generate suggestions
-  const url = form.get("url")?.toString().trim() ?? "";
-  const domain = extractDomain(url);
-  if (!domain) return { error: "Enter a valid website URL or domain name" };
-
-  const existing = await prisma.site.findFirst({
-    where: { accountId: user.accountId, domain },
-  });
-  if (existing)
-    return { error: "That domain is already added to your account" };
-
-  const dnsOk = await verifyDomain(domain);
-  if (!dnsOk)
-    return { error: `No DNS records found for ${domain}. Is the domain live?` };
-
-  const content = await fetchPageContent(domain);
-  const site = await prisma.site.create({
-    data: { domain, account: { connect: { id: user.accountId } }, content },
-  });
-
-  if (!content) return { siteId: site.id };
-
+  const url = form.get("url")?.toString() ?? "";
   try {
+    const site = await addSiteToAccount(user.account, url);
     const suggestions = await generateSiteQueries(site);
     return { siteId: site.id, suggestions };
   } catch (error) {
-    captureException(error, { extra: { siteId: site.id } });
-    return { siteId: site.id };
+    captureException(error, { extra: { url } });
+    return { error: "An error occurred while generating queries" };
   }
 }
 

@@ -6,6 +6,7 @@ import {
   utmCookie,
 } from "~/lib/cookies.server";
 import prisma from "~/lib/prisma.server";
+import type { Prisma } from "~/prisma";
 
 /**
  * Hashes a password using bcrypt.
@@ -13,7 +14,7 @@ import prisma from "~/lib/prisma.server";
  * @param password - The password to hash
  * @returns The hashed password (string)
  */
-export async function hashPassword(password: string) {
+export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 10);
 }
 
@@ -24,7 +25,10 @@ export async function hashPassword(password: string) {
  * @param hash - The hash to verify against
  * @returns True if the password matches the hash, otherwise false (boolean)
  */
-export async function verifyPassword(password: string, hash: string) {
+export async function verifyPassword(
+  password: string,
+  hash: string,
+): Promise<boolean> {
   return bcrypt.compare(password, hash);
 }
 
@@ -35,7 +39,10 @@ export async function verifyPassword(password: string, hash: string) {
  * @param request - The request object
  * @returns The session cookie (string)
  */
-export async function createSession(userId: string, request: Request) {
+export async function createSession(
+  userId: string,
+  request: Request,
+): Promise<string> {
   const cookieHeader = request.headers.get("Cookie");
   const utm = await utmCookie.parse(cookieHeader);
 
@@ -70,7 +77,9 @@ export async function createSession(userId: string, request: Request) {
  * @param userId - The user ID
  * @returns The token (string) and the expiration date (Date)
  */
-export async function createEmailVerificationToken(userId: string) {
+export async function createEmailVerificationToken(
+  userId: string,
+): Promise<string> {
   const token = crypto.randomUUID();
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
   await prisma.emailVerificationToken.create({
@@ -96,13 +105,15 @@ export async function signOut(): Promise<Headers> {
  * @param request - The request object
  * @returns The user object if found, otherwise null
  */
-export async function getCurrentUser(request: Request) {
+export async function getCurrentUser(
+  request: Request,
+): Promise<Prisma.UserGetPayload<{ include: { account: true } }> | null> {
   const cookieHeader = request.headers.get("Cookie");
   const token = await sessionCookie.parse(cookieHeader);
   if (!token) return null;
   const session = await prisma.session.findUnique({
     where: { token },
-    include: { user: true },
+    include: { user: { include: { account: true } } },
   });
   return session?.user ?? null;
 }
@@ -113,7 +124,9 @@ export async function getCurrentUser(request: Request) {
  * @param request - The request object
  * @returns The user object if found, otherwise redirects to the sign-in page
  */
-export async function requireUser(request: Request) {
+export async function requireUser(
+  request: Request,
+): Promise<Prisma.UserGetPayload<{ include: { account: true } }>> {
   const user = await getCurrentUser(request);
   if (user) return user;
 

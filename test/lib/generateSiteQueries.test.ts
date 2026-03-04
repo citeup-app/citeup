@@ -49,17 +49,6 @@ describe("generateSiteQueries", () => {
     expect(suggestions).toEqual(MOCK_QUERIES);
   });
 
-  it("should store suggestions in the database", async () => {
-    await generateSiteQueries(site);
-    const suggestions = await prisma.siteQuerySuggestion.findMany({
-      where: { siteId: site.id },
-    });
-    expect(suggestions).toHaveLength(9);
-    expect(
-      suggestions.map((query) => ({ group: query.group, query: query.query })),
-    ).toEqual(MOCK_QUERIES);
-  });
-
   it("propagates errors from generateText", async () => {
     const { generateText } = await import("ai");
     vi.mocked(generateText).mockRejectedValue(new Error("API error"));
