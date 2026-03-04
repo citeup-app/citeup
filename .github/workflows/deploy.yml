@@ -84,6 +84,18 @@ jobs:
           SESSION_SECRET: "secret"
           RESEND_API_KEY: "preq_test_..."
 
+      - name: Run Playwright Tests
+        run: pnpm --max-old-space-size=4096 playwright test
+        env:
+          ANTHROPIC_API_KEY: "sk-ant-"
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/citeup"
+          DEBUG: ""
+          GOOGLE_GENERATIVE_AI_API_KEY: "AIza"
+          OPENAI_API_KEY: "sk-proj-"
+          PERPLEXITY_API_KEY: "pk-prod-"
+          SESSION_SECRET: "secret"
+          RESEND_API_KEY: "preq_test_..."
+
       - name: Upload Playwright Test Results
         uses: actions/upload-artifact@v4
         continue-on-error: true

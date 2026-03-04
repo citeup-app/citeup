@@ -8,10 +8,12 @@ let page: Page;
 let user: User | null;
 let site: Site | null;
 
+test.beforeAll(async () => {
+  await prisma.account.deleteMany();
+});
+
 // Integration test: Ensure Playwright loads homepage correctly, for smoke-checking infra
 test("loads homepage with Playwright", async () => {
-  await prisma.account.deleteMany();
-
   page = await goto("/");
   await expect(
     page.getByRole("heading", { name: /Does ChatGPT mention/i }),
