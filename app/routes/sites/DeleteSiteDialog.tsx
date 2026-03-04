@@ -13,15 +13,6 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/Input";
 
-interface DeleteSiteDialogProps {
-  isOpen: boolean;
-  domain: string;
-  siteId: string;
-  onClose: () => void;
-  onConfirm: (siteId: string) => void;
-  isSubmitting?: boolean;
-}
-
 export default function DeleteSiteDialog({
   domain,
   onConfirm,
@@ -46,7 +37,11 @@ export default function DeleteSiteDialog({
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="ghost" disabled={isSubmitting}>
+        <Button
+          variant="ghost"
+          disabled={isSubmitting}
+          aria-label="Delete site"
+        >
           <TrashIcon className="size-4" />
         </Button>
       </DialogTrigger>

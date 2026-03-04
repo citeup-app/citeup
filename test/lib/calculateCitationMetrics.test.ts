@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import calculateCitationMetrics from "~/lib/llm-visibility/calculateCitationMetrics";
 
 describe("calculateCitationMetrics", () => {
@@ -16,7 +16,7 @@ describe("calculateCitationMetrics", () => {
         citations: ["other.com", "example.com"],
       },
     ];
-    const result = calculateCitationMetrics(queries as any, "example.com");
+    const result = calculateCitationMetrics(queries, "example.com");
     expect(result.totalCitations).toBe(2);
     expect(result.avgScore).toBe((50 + 10) / 2); // 30
   });
@@ -27,7 +27,7 @@ describe("calculateCitationMetrics", () => {
       { citations: ["other.com"] },
       { citations: ["example.com", "another.com"] },
     ];
-    const result = calculateCitationMetrics(queries as any, "example.com");
+    const result = calculateCitationMetrics(queries, "example.com");
     expect(result.totalCitations).toBe(2);
   });
 });

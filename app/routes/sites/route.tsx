@@ -1,8 +1,6 @@
 import { Temporal } from "@js-temporal/polyfill";
-import { AlertCircleIcon } from "lucide-react";
-import { Link, useFetcher } from "react-router";
+import { Link } from "react-router";
 import { ActiveLink } from "~/components/ui/ActiveLink";
-import { Alert, AlertTitle } from "~/components/ui/Alert";
 import { Button } from "~/components/ui/Button";
 import { Card, CardContent } from "~/components/ui/Card";
 import { requireUser } from "~/lib/auth.server";
@@ -10,7 +8,7 @@ import calculateCitationMetrics from "~/lib/llm-visibility/calculateCitationMetr
 import { getBotMetrics } from "~/lib/llm-visibility/getBotMetrics.server";
 import prisma from "~/lib/prisma.server";
 import type { Route } from "./+types/route";
-import DeleteSiteDialog from "./DeleteSiteDialog";
+import SiteEntry from "./SiteEntry";
 
 export function meta(): Route.MetaDescriptors {
   return [{ title: "Your Sites | CiteUp" }];
@@ -76,8 +74,6 @@ export async function action({ request }: Route.ActionArgs) {
 
 export default function SitesPage({ loaderData }: Route.ComponentProps) {
   const { sites } = loaderData;
-  const deleteFetcher = useFetcher<typeof action>();
-  const isSubmitting = deleteFetcher.state === "submitting";
 
   if (sites.length === 0) {
     return (
@@ -102,70 +98,18 @@ export default function SitesPage({ loaderData }: Route.ComponentProps) {
         <h1 className="font-heading text-3xl">Your Sites</h1>
         <Button render={<Link to="/sites/new" />}>Add Site</Button>
       </div>
-      {deleteFetcher.data?.error && (
-        <Alert variant="destructive">
-          <AlertCircleIcon className="h-4 w-4" />
-          <AlertTitle>{deleteFetcher.data.error}</AlertTitle>
-        </Alert>
-      )}
 
       <Card>
         <CardContent className="space-y-4 divide-y-2 divide-black/10">
           {sites.map((item) => (
-            <div
-              className={
-                "block py-4 first:pt-0 last:pb-0" // preserve space-y-4 effect; optional
-              }
+            <SiteEntry
               key={item.site.id}
-            >
-              <p className="flex flex-row items-center justify-between">
-                <Link
-                  to={`/site/${item.site.id}/citations`}
-                  className="w-full font-bold font-mono text-lg"
-                >
-                  {item.site.domain}
-                </Link>
-                <DeleteSiteDialog
-                  domain={item.site.domain}
-                  onConfirm={() => {
-                    deleteFetcher.submit(
-                      { siteId: item.site.id },
-                      { method: "DELETE" },
-                    );
-                  }}
-                  isSubmitting={isSubmitting}
-                />
-              </p>
-              <Link
-                to={`/site/${item.site.id}/citations`}
-                className="mt-4 grid grid-cols-4 gap-4 text-center"
-              >
-                <div>
-                  <p className="font-light">Citations</p>
-                  <p className="font-bold text-3xl">
-                    {item.totalCitations.toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="font-light">Avg Score</p>
-                  <p className="font-bold text-3xl">
-                    {item.avgScore.toFixed(1).toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="font-light">Bot Visits</p>
-                  <p className="font-bold text-3xl">
-                    {item.totalBotVisits.toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="font-light">Unique Bots</p>
-                  <p className="font-bold text-3xl">
-                    {item.uniqueBots.toLocaleString()}
-                  </p>
-                </div>
-              </Link>
-            </div>
+              site={item.site}
+              totalCitations={item.totalCitations}
+              avgScore={item.avgScore}
+              totalBotVisits={item.totalBotVisits}
+              uniqueBots={item.uniqueBots}
+            />
           ))}
         </CardContent>
       </Card>

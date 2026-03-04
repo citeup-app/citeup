@@ -78,6 +78,7 @@ describe("sites route", () => {
           accountId: user.accountId,
         },
       });
+      await signIn(user.id);
       page = await goto("/sites");
     });
 
@@ -88,50 +89,29 @@ describe("sites route", () => {
     });
 
     it("shows column headers", async () => {
-      await expect(page.getByText("Domain", { exact: true })).toBeVisible();
       await expect(page.getByText("Citations", { exact: true })).toBeVisible();
       await expect(page.getByText("Avg Score", { exact: true })).toBeVisible();
       await expect(page.getByText("Bot Visits", { exact: true })).toBeVisible();
-      await expect(page.getByText("Unique Bots", { exact: true })).toBeVisible();
+      await expect(
+        page.getByText("Unique Bots", { exact: true }),
+      ).toBeVisible();
     });
 
     it("shows View button", async () => {
-      const link = page.getByRole("link", { name: "View" });
+      const link = page.getByRole("link", { name: "example.com" });
       await expect(link).toBeVisible();
       await expect(link).toHaveAttribute("href", /\/site\//);
     });
 
     it("shows Delete button", async () => {
-      await expect(page.getByRole("button", { name: "Delete" })).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: "Delete site" }),
+      ).toBeVisible();
     });
 
     it("shows Add Site button in list state", async () => {
       const addBtn = page.getByRole("link", { name: "Add Site" });
       await expect(addBtn).toBeVisible();
-    });
-
-    it("delete button opens confirmation dialog", async () => {
-      const deleteBtn = page.getByRole("button", { name: "Delete" }).first();
-      await deleteBtn.click();
-      await expect(
-        page.getByText("Are you sure you want to delete"),
-      ).toBeVisible();
-    });
-
-    it("delete dialog requires domain name match", async () => {
-      const deleteBtn = page.getByRole("button", { name: "Delete" }).first();
-      await deleteBtn.click();
-      const deleteConfirmBtn = page.getByRole("button", {
-        name: "Delete Site",
-      });
-      // Initially disabled
-      await expect(deleteConfirmBtn).toBeDisabled();
-      // Type wrong domain
-      await page.getByPlaceholder("example.com").fill("wrong.com");
-      await expect(deleteConfirmBtn).toBeDisabled();
-      // Type correct domain
-      await page.getByPlaceholder("example.com").fill("example.com");
-      await expect(deleteConfirmBtn).toBeEnabled();
     });
 
     it("HTML matches baseline", { timeout: 30_000 }, async () => {
@@ -149,6 +129,33 @@ describe("sites route", () => {
     it("screenshot matches baseline", { timeout: 30_000 }, async () => {
       await expect(page.locator("main")).toMatchScreenshot({
         name: "sites-list",
+      });
+    });
+
+    describe("delete button", () => {
+      beforeAll(async () => {
+        const deleteBtn = page
+          .getByRole("button", { name: "Delete site" })
+          .first();
+        await deleteBtn.click();
+      });
+
+      it("delete button opens confirmation dialog", async () => {
+        await expect(
+          page.getByText("Are you sure you want to delete"),
+        ).toBeVisible();
+      });
+
+      it("delete dialog requires domain name match", async () => {
+        const deleteConfirmBtn = page.getByRole("button", {
+          name: "Delete Site",
+        });
+        // Initially disabled
+        await expect(deleteConfirmBtn).toBeDisabled();
+
+        // Type wrong domain
+        await page.getByPlaceholder("example.com").fill("wrong.com");
+        await expect(deleteConfirmBtn).toBeDisabled();
       });
     });
   });

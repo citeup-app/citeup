@@ -68,8 +68,8 @@ export default function PageLayout({
         <PageLoadingBouncer />
         <ScrollRestoration />
         <Scripts />
-        <Analytics />
-        <SpeedInsights />
+        {import.meta.env.PROD && <Analytics />}
+        {import.meta.env.PROD && <SpeedInsights />}
         <script type="application/ld+json">{JSON.stringify(schema)}</script>
       </body>
     </html>

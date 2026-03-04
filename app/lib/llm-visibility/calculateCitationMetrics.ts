@@ -1,12 +1,10 @@
-import type { CitationQuery } from "~/prisma";
-
 interface MetricsResult {
   totalCitations: number;
   avgScore: number;
 }
 
 export default function calculateCitationMetrics(
-  queries: CitationQuery[],
+  queries: { citations: string[] }[],
   domain: string,
 ): MetricsResult {
   let totalScore = 0;
