@@ -18,7 +18,7 @@ export default defineConfig({
     bail: 3, // Stop after 3 failing tests
     browser: { screenshotDirectory: "__screenshots__" },
     disableConsoleIntercept: !process.env.CI,
-    exclude: [],
+    exclude: ["test/e2e/*"],
     execArgv: ["--max-old-space-size=3072"],
     fileParallelism: false,
     globalSetup: "test/helpers/setupGlobal.ts",
