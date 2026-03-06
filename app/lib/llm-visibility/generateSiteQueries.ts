@@ -4,7 +4,7 @@ import prisma from "~/lib/prisma.server";
 import type { Site } from "~/prisma";
 import { fetchPageContent } from "../sites.server";
 import { haiku } from "./anthropic";
-import defaultQueryGroups from "./defaultQueryCategories";
+import queryGroups from "./queryGroups";
 
 /**
  * Generate site queries for a given site. If the site content is not available,
@@ -36,13 +36,13 @@ export default async function generateSiteQueries(
 Return exactly 9 queries: 3 per group.
 
 Groups:
-${defaultQueryGroups.map((g) => `- ${g.group}: ${g.intent}`).join("\n")}
+${queryGroups.map((g) => `- ${g.group}: ${g.intent}`).join("\n")}
 
 Rules:
 - Queries must sound like real user questions, not marketing copy.
 - Each query should be specific enough to trigger a citation for this site.
 - Vary the phrasing; do not repeat the same question structure.
-- Group should be one of the following: ${defaultQueryGroups.map((c) => c.group).join(", ")}
+- Group should be one of the following: ${queryGroups.map((c) => c.group).join(", ")}
 - Group is a number followed by a dot and the group name.
 `,
       },

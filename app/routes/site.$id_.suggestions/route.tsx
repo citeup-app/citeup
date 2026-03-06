@@ -13,7 +13,7 @@ import Main from "~/components/ui/Main";
 import Spinner from "~/components/ui/Spinner";
 import addSiteQueries from "~/lib/addSiteQueries";
 import { requireUser } from "~/lib/auth.server";
-import defaultQueryCategories from "~/lib/llm-visibility/defaultQueryCategories";
+import queryGroups from "~/lib/llm-visibility/queryGroups";
 import prisma from "~/lib/prisma.server";
 import type { Route } from "./+types/route";
 
@@ -29,13 +29,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 export function meta(): Route.MetaDescriptors {
   return [{ title: "Add a Site | CiteUp" }];
 }
-
-type Suggestion = { group: string; query: string };
-
-type ActionResult =
-  | { error: string }
-  | { siteId: string }
-  | { siteId: string; suggestions: Suggestion[] };
 
 export async function action({ params, request }: Route.ActionArgs) {
   try {
@@ -70,7 +63,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
     [([group]) => group],
   );
 
-  const fetcher = useFetcher<ActionResult>();
+  const fetcher = useFetcher<typeof action>();
   const isProcessing = fetcher.state !== "idle";
 
   function addQuery(group: string) {
@@ -113,9 +106,8 @@ export default function Index({ loaderData }: Route.ComponentProps) {
           <Card key={group}>
             <CardContent className="space-y-2">
               <p className="font-heading text-base">
-                {defaultQueryCategories.find(
-                  (c: { group: string }) => c.group === group,
-                )?.intent ?? group}
+                {queryGroups.find((c: { group: string }) => c.group === group)
+                  ?.intent ?? group}
               </p>
               <ul className="space-y-1">
                 {queries.map(({ query, id }, pos) => (

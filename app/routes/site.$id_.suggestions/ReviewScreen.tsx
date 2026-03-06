@@ -8,14 +8,8 @@ import { Card, CardContent } from "~/components/ui/Card";
 import { Input } from "~/components/ui/Input";
 import Main from "~/components/ui/Main";
 import Spinner from "~/components/ui/Spinner";
-import defaultQueryCategories from "~/lib/llm-visibility/defaultQueryCategories";
-
-type Suggestion = { group: string; query: string };
-
-type ActionResult =
-  | { error: string }
-  | { siteId: string }
-  | { siteId: string; suggestions: Suggestion[] };
+import queryGroups from "~/lib/llm-visibility/queryGroups";
+import type { action } from "./route";
 
 export default function ReviewScreen({
   siteId,
@@ -26,7 +20,7 @@ export default function ReviewScreen({
   siteId: string;
   initialSuggestions: { group: string; query: string }[];
   isProcessing: boolean;
-  fetcher: ReturnType<typeof useFetcher<ActionResult>>;
+  fetcher: ReturnType<typeof useFetcher<typeof action>>;
 }) {
   const nextId = useRef(initialSuggestions.length);
   const [suggestions, setSuggestions] = useState<
@@ -88,9 +82,8 @@ export default function ReviewScreen({
           <Card key={group}>
             <CardContent className="space-y-2">
               <p className="font-heading text-base">
-                {defaultQueryCategories.find(
-                  (c: { group: string }) => c.group === group,
-                )?.intent ?? group}
+                {queryGroups.find((c: { group: string }) => c.group === group)
+                  ?.intent ?? group}
               </p>
               <ul className="space-y-1">
                 {queries.map(({ query, id }, pos) => (
