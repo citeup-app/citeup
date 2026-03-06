@@ -6,6 +6,7 @@
 @custom-variant dark (&:is(.dark *));
 @plugin "@tailwindcss/typography";
 @plugin "@tailwindcss/forms";
+@source "../node_modules/streamdown/dist/*.js";
 
 @theme {
   --color-destructive: #dc2626; /* bold red */
