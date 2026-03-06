@@ -30,7 +30,7 @@ export default async function setup() {
   await launchServer(port);
 
   // Cleanup database: we do this here for Playwright tests, and we do it in the
-  // setupTestSuite for the unit tests
+  // suite.setup.ts for the unit tests
   await prisma.account.deleteMany();
 }
 
