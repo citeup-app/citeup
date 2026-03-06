@@ -46,7 +46,9 @@ describe("generateSiteQueries", () => {
 
     const suggestions = await generateSiteQueries(site);
     expect(suggestions).toHaveLength(9);
-    expect(suggestions).toEqual(MOCK_QUERIES);
+    expect(
+      suggestions.map((q) => ({ group: q.group, query: q.query })),
+    ).toEqual(MOCK_QUERIES);
   });
 
   it("propagates errors from generateText", async () => {
