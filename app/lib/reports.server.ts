@@ -1,20 +1,29 @@
 import { Temporal } from "@js-temporal/polyfill";
 import debug from "debug";
+import { captureException } from "@sentry/react-router";
 import type { Account, BotInsight, BotVisit, Site, User } from "~/prisma";
 import prisma from "./prisma.server";
 
 const logger = debug("server");
 
 /**
- * Query new users created in the past 24 hours
+ * Get a 24-hour window from now
  */
-async function queryNewUsers() {
+function get24HourWindow() {
   const now = new Date(
     Temporal.Now.instant().epochMilliseconds
   );
   const oneDayAgo = new Date(
     Temporal.Now.instant().subtract({ hours: 24 }).epochMilliseconds
   );
+  return { now, oneDayAgo };
+}
+
+/**
+ * Query new users created in the past 24 hours
+ */
+async function queryNewUsers() {
+  const { now, oneDayAgo } = get24HourWindow();
 
   logger("[reports:newUsers] Querying users from %s to %s", oneDayAgo, now);
 
@@ -36,12 +45,7 @@ async function queryNewUsers() {
  * Query new sites with account and user details (past 24 hours)
  */
 async function queryNewSites() {
-  const now = new Date(
-    Temporal.Now.instant().epochMilliseconds
-  );
-  const oneDayAgo = new Date(
-    Temporal.Now.instant().subtract({ hours: 24 }).epochMilliseconds
-  );
+  const { now, oneDayAgo } = get24HourWindow();
 
   logger("[reports:newSites] Querying sites from %s to %s", oneDayAgo, now);
 
@@ -70,12 +74,7 @@ async function queryNewSites() {
  * Query top 3 bot visits by count for a site (past 24 hours)
  */
 async function queryTopBotVisits(siteId: string) {
-  const now = new Date(
-    Temporal.Now.instant().epochMilliseconds
-  );
-  const oneDayAgo = new Date(
-    Temporal.Now.instant().subtract({ hours: 24 }).epochMilliseconds
-  );
+  const { now, oneDayAgo } = get24HourWindow();
 
   logger(
     "[reports:topBotVisits] Querying for site %s from %s to %s",
@@ -162,12 +161,7 @@ async function queryCitationScores(siteId: string) {
  * Query bot insights updated in past 24 hours
  */
 async function queryBotInsightsUpdated() {
-  const now = new Date(
-    Temporal.Now.instant().epochMilliseconds
-  );
-  const oneDayAgo = new Date(
-    Temporal.Now.instant().subtract({ hours: 24 }).epochMilliseconds
-  );
+  const { now, oneDayAgo } = get24HourWindow();
 
   logger(
     "[reports:botInsights] Querying insights updated from %s to %s",
@@ -211,7 +205,7 @@ function calculateAverageScore(runs: CitationQueryRun[]): number {
     return sum + citationCount;
   }, 0);
 
-  return runs.length > 0 ? Math.round((totalCitations / runs.length) * 100) / 100 : 0;
+  return Math.round((totalCitations / runs.length) * 100) / 100;
 }
 
 /**
@@ -250,6 +244,7 @@ export async function generateDailyReport(): Promise<string> {
     logger("[reports:generate] Report HTML generated successfully");
     return html;
   } catch (error) {
+    captureException(error);
     logger("[reports:generate] Error generating report: %o", error);
     throw error;
   }
