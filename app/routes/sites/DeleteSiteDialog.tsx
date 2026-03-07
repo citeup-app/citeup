@@ -1,5 +1,4 @@
 import { useRef, useState } from "react";
-import { Button } from "~/components/ui/Button";
 import {
   Dialog,
   DialogClose,
@@ -9,7 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "~/components/ui/Dialog";
+} from "~/components/ui/_Dialog";
+import { Button } from "~/components/ui/Button";
 import { Input } from "~/components/ui/Input";
 
 export default function DeleteSiteDialog({
