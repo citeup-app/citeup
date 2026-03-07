@@ -6,9 +6,9 @@ import {
 } from "lucide-react";
 import type { User } from "prisma/generated/client";
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useRouteLoaderData } from "react-router";
+import { Link, useRouteLoaderData } from "react-router";
 import { twMerge } from "tailwind-merge";
-import { Button } from "~/components/ui/Button";
+import { Button, buttonVariants } from "~/components/ui/Button";
 import type { loader as rootLoader } from "~/root";
 
 export default function AccountMenu({ className }: { className?: string }) {
@@ -27,19 +27,14 @@ export default function AccountMenu({ className }: { className?: string }) {
 }
 
 function SignInButton() {
-  const navigate = useNavigate();
-
   return (
-    <Button
+    <Link
+      to="/sign-in"
       aria-label="Go to sign in page"
-      className="h-9"
-      onClick={() => {
-        navigate("/sign-in");
-      }}
-      type="button"
+      className={buttonVariants({ size: "default", className: "h-9" })}
     >
       Sign In
-    </Button>
+    </Link>
   );
 }
 

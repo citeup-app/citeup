@@ -9,6 +9,9 @@ export default defineConfig(async (config) =>
     build: {
       sourcemap: true,
     },
+    resolve: {
+      dedupe: ["react", "react-dom", "react-router"],
+    },
     plugins: [
       tailwindcss(),
       reactRouter(),
