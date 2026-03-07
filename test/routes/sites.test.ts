@@ -147,12 +147,14 @@ describe("sites route", () => {
 
     beforeAll(async () => {
       await prisma.site.deleteMany();
+
       page = await goto("/sites");
       await page
         .getByRole("textbox", { name: "Website URL or domain" })
         .fill("example.com");
       await page.getByRole("button", { name: "Add Site" }).click();
       await page.waitForURL(/\/site\/[^/]+\/suggestions/);
+
       site = await prisma.site.findFirstOrThrow({
         where: { domain: "example.com", accountId: user.accountId },
       });
@@ -189,6 +191,7 @@ describe("sites route", () => {
 
     describe("when save queries button", () => {
       beforeAll(async () => {
+        expect(page.url()).toMatch(/\/site\/[^/]+\/suggestions/);
         await page.getByRole("button", { name: "Save queries" }).click();
         await page.waitForURL(/\/site\/[^/]+\/citations/);
       });
