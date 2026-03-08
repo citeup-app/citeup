@@ -7,6 +7,7 @@ on:
 env:
   ANTHROPIC_API_KEY: "sk-ant-"
   DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/citeup"
+  DIRECT_URL: "postgresql://postgres:postgres@localhost:5432/citeup"
   DEBUG: ""
   GOOGLE_GENERATIVE_AI_API_KEY: "AIza"
   NODE_OPTIONS: "--max-old-space-size=3096"
@@ -67,8 +68,6 @@ jobs:
         run: |
           pnpm prisma generate 
           pnpm prisma db push
-        env:
-          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/citeup"
 
       - name: Check secrets
         run: pnpm secretlint "**/*" --format stylish
@@ -116,6 +115,7 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: pnpm prisma db push --url "${{ env.DIRECT_URL }}"
         env:
+          DIRECT_URL: "${{ env.DIRECT_URL }}"
           DATABASE_URL: "${{ env.DIRECT_URL }}"
 
       - name: Deploy to Vercel
