@@ -23,7 +23,7 @@ const envVars = {
   OPENAI_API_KEY: env.get("OPENAI_API_KEY").required(false).asString(),
   PERPLEXITY_API_KEY: env.get("PERPLEXITY_API_KEY").required(false).asString(),
   REDIS_URL: env.get("REDIS_URL").required().asString(),
-  RESEND_API_KEY: env.get("RESEND_API_KEY").required(false).asString(),
+  RESEND_API_KEY: env.get("RESEND_API_KEY").required().asString(),
   SESSION_SECRET: env.get("SESSION_SECRET").required().asString(),
 };
 

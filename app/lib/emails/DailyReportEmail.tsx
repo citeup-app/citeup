@@ -1,15 +1,4 @@
-import {
-  Body,
-  Container,
-  Head,
-  Hr,
-  Html,
-  Preview,
-  Row,
-  Section,
-  Tailwind,
-  Text,
-} from "@react-email/components";
+import { Hr, Row, Section, Text } from "@react-email/components";
 import { captureException } from "@sentry/react-router";
 import debug from "debug";
 import type { Account, BotInsight, BotVisit, Site, User } from "~/prisma";
@@ -20,6 +9,7 @@ import {
   queryNewUsers,
   queryTopBotVisits,
 } from "./dailyReports.server";
+import EmailLayout from "./EmailLayout";
 import { sendEmail } from "./sendEmails.server";
 
 const logger = debug("email");
@@ -53,7 +43,6 @@ export default async function sendDailyReportEmail(): Promise<string> {
           newUsers={newUsers}
           newSitesWithMetrics={newSitesWithMetrics}
           botInsights={botInsights}
-          generatedAt={new Date()}
         />
       ),
       subject: "CiteUp Daily Report",
@@ -69,7 +58,6 @@ function DailyReportEmail({
   newUsers,
   newSitesWithMetrics,
   botInsights,
-  generatedAt,
 }: {
   newUsers: User[];
   newSitesWithMetrics: Array<{
@@ -78,208 +66,174 @@ function DailyReportEmail({
     citationScores: { current: number; previous: number };
   }>;
   botInsights: (BotInsight & { site: Site })[];
-  generatedAt: Date;
 }) {
-  const formattedDate = new Date(generatedAt).toLocaleString("en-US", {
-    timeZone: "America/Los_Angeles",
-  });
-
   const botInsightMap = new Map(
     botInsights.map((insight) => [insight.siteId, insight]),
   );
 
   return (
-    <Html lang="en">
-      <Head />
-      <Preview>CiteUp Daily Report - {formattedDate}</Preview>
-      <Body className="bg-white font-sans">
-        <Tailwind>
-          <Container className="mx-auto max-w-[640px] py-5">
-            {/* Header */}
-            <Section className="pb-5 text-center">
-              <Text className="m-0 mb-2 border-[#0066cc] border-b-2 pb-2 font-bold text-[#1a1a1a] text-[32px]">
-                CiteUp Daily Report
-              </Text>
-              <Text className="m-0 mt-2 text-[#666] text-[14px]">
-                Generated: {formattedDate}
-              </Text>
+    <EmailLayout subject="CiteUp Daily Report">
+      {/* New Users Section */}
+      {newUsers.length > 0 ? (
+        <Section className="mb-8 pb-5">
+          <Text className="m-0 mb-[15px] font-semibold text-[#333] text-[20px]">
+            New Users (Past 24h)
+          </Text>
+          <table className="my-[15px] w-full border-collapse">
+            <thead>
+              <tr>
+                <th className="border-[#ddd] border-b bg-[#f5f5f5] p-[10px] text-left font-semibold text-[14px]">
+                  Email
+                </th>
+                <th className="border-[#ddd] border-b bg-[#f5f5f5] p-[10px] text-left font-semibold text-[14px]">
+                  Account ID
+                </th>
+                <th className="border-[#ddd] border-b bg-[#f5f5f5] p-[10px] text-left font-semibold text-[14px]">
+                  Created
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {newUsers.map((user) => (
+                <tr key={user.id}>
+                  <td className="border-[#ddd] border-b p-[10px] text-[14px]">
+                    {user.email}
+                  </td>
+                  <td className="border-[#ddd] border-b p-[10px] text-[14px]">
+                    {user.accountId}
+                  </td>
+                  <td className="border-[#ddd] border-b p-[10px] text-[14px]">
+                    {user.createdAt.toLocaleDateString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Section>
+      ) : (
+        <Section className="mb-8 pb-5">
+          <Text className="m-0 mb-[15px] font-semibold text-[#333] text-[20px]">
+            New Users (Past 24h)
+          </Text>
+          <Text className="text-[#999] text-[14px] italic">
+            None in the past 24 hours.
+          </Text>
+        </Section>
+      )}
+
+      {/* New Sites Section */}
+      {newSitesWithMetrics.length > 0 ? (
+        <Section className="mb-8 pb-5">
+          <Text className="m-0 mb-[15px] font-semibold text-[#333] text-[20px]">
+            New Sites (Past 24h)
+          </Text>
+          {newSitesWithMetrics.map(({ site, topBotVisits }) => {
+            const insight = botInsightMap.get(site.id);
+
+            return (
+              <Section
+                key={site.id}
+                className="mb-[15px] rounded bg-[#f9f9f9] p-[15px]"
+              >
+                <Text className="m-0 mb-2 font-semibold text-[16px]">
+                  {site.domain}
+                </Text>
+                <Text className="m-0 mb-3 text-[#666] text-[12px]">
+                  Account: {site.account.id} | Users:{" "}
+                  {site.account.users.map((u: User) => u.email).join(", ")}
+                </Text>
+
+                {topBotVisits.length > 0 && (
+                  <>
+                    <Text className="mt-3 mb-2 font-semibold text-[#333] text-[14px]">
+                      Top Bot Visits
+                    </Text>
+                    <ul className="my-2 pl-5">
+                      {topBotVisits.map((visit) => (
+                        <li
+                          key={visit.id}
+                          className="my-1 text-[#555] text-[13px]"
+                        >
+                          {visit.botType}: {visit.count} visits
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+
+                {insight && (
+                  <>
+                    <Text className="mt-3 mb-2 font-semibold text-[#333] text-[14px]">
+                      Bot Insight (Updated today)
+                    </Text>
+                    <Text className="my-2 text-[#555] text-[13px] leading-normal">
+                      {insight.content.split("\n").slice(0, 2).join(" ")}
+                    </Text>
+                  </>
+                )}
+
+                <Hr className="my-[15px] border-[#eee] border-t" />
+              </Section>
+            );
+          })}
+        </Section>
+      ) : (
+        <Section className="mb-8 pb-5">
+          <Text className="m-0 mb-[15px] font-semibold text-[#333] text-[20px]">
+            New Sites (Past 24h)
+          </Text>
+          <Text className="text-[#999] text-[14px] italic">
+            None in the past 24 hours.
+          </Text>
+        </Section>
+      )}
+
+      {/* Account Metrics Section */}
+      <Section className="mb-8 pb-5">
+        <Text className="m-0 mb-[15px] font-semibold text-[#333] text-[20px]">
+          Account Metrics (Citation Query Score)
+        </Text>
+        {newSitesWithMetrics.map(({ site, citationScores }) => {
+          const change = citationScores.current - citationScores.previous;
+          const changePercent =
+            citationScores.previous === 0
+              ? citationScores.current > 0
+                ? 100
+                : 0
+              : (change / citationScores.previous) * 100;
+          const changeColor =
+            change > 0 ? "#28a745" : change < 0 ? "#dc3545" : "#6c757d";
+
+          return (
+            <Section
+              key={site.id}
+              className="mb-[15px] rounded bg-[#f9f9f9] p-[15px]"
+            >
+              <Row>
+                <Text className="m-0 font-semibold text-[#1a1a1a] text-[15px]">
+                  {site.account.hostname || site.account.id}
+                </Text>
+              </Row>
+              <Row>
+                <Text className="my-1 text-[#555] text-[13px]">
+                  Current: <strong>{citationScores.current}</strong> | Previous
+                  24h: {citationScores.previous}
+                </Text>
+              </Row>
+              <Row>
+                <Text
+                  className="my-1 text-[13px]"
+                  style={{ color: changeColor }}
+                >
+                  Change: {change > 0 ? "+" : ""}
+                  {change} ({changePercent > 0 ? "+" : ""}
+                  {changePercent.toFixed(2)}%)
+                </Text>
+              </Row>
             </Section>
-
-            {/* New Users Section */}
-            {newUsers.length > 0 ? (
-              <Section className="mb-8 pb-5">
-                <Text className="m-0 mb-[15px] font-semibold text-[#333] text-[20px]">
-                  New Users (Past 24h)
-                </Text>
-                <table className="my-[15px] w-full border-collapse">
-                  <thead>
-                    <tr>
-                      <th className="border-[#ddd] border-b bg-[#f5f5f5] p-[10px] text-left font-semibold text-[14px]">
-                        Email
-                      </th>
-                      <th className="border-[#ddd] border-b bg-[#f5f5f5] p-[10px] text-left font-semibold text-[14px]">
-                        Account ID
-                      </th>
-                      <th className="border-[#ddd] border-b bg-[#f5f5f5] p-[10px] text-left font-semibold text-[14px]">
-                        Created
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {newUsers.map((user) => (
-                      <tr key={user.id}>
-                        <td className="border-[#ddd] border-b p-[10px] text-[14px]">
-                          {user.email}
-                        </td>
-                        <td className="border-[#ddd] border-b p-[10px] text-[14px]">
-                          {user.accountId}
-                        </td>
-                        <td className="border-[#ddd] border-b p-[10px] text-[14px]">
-                          {user.createdAt.toLocaleDateString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </Section>
-            ) : (
-              <Section className="mb-8 pb-5">
-                <Text className="m-0 mb-[15px] font-semibold text-[#333] text-[20px]">
-                  New Users (Past 24h)
-                </Text>
-                <Text className="text-[#999] text-[14px] italic">
-                  None in the past 24 hours.
-                </Text>
-              </Section>
-            )}
-
-            {/* New Sites Section */}
-            {newSitesWithMetrics.length > 0 ? (
-              <Section className="mb-8 pb-5">
-                <Text className="m-0 mb-[15px] font-semibold text-[#333] text-[20px]">
-                  New Sites (Past 24h)
-                </Text>
-                {newSitesWithMetrics.map(({ site, topBotVisits }) => {
-                  const insight = botInsightMap.get(site.id);
-
-                  return (
-                    <Section
-                      key={site.id}
-                      className="mb-[15px] rounded bg-[#f9f9f9] p-[15px]"
-                    >
-                      <Text className="m-0 mb-2 font-semibold text-[16px]">
-                        {site.domain}
-                      </Text>
-                      <Text className="m-0 mb-3 text-[#666] text-[12px]">
-                        Account: {site.account.id} | Users:{" "}
-                        {site.account.users
-                          .map((u: User) => u.email)
-                          .join(", ")}
-                      </Text>
-
-                      {topBotVisits.length > 0 && (
-                        <>
-                          <Text className="mt-3 mb-2 font-semibold text-[#333] text-[14px]">
-                            Top Bot Visits
-                          </Text>
-                          <ul className="my-2 pl-5">
-                            {topBotVisits.map((visit) => (
-                              <li
-                                key={visit.id}
-                                className="my-1 text-[#555] text-[13px]"
-                              >
-                                {visit.botType}: {visit.count} visits
-                              </li>
-                            ))}
-                          </ul>
-                        </>
-                      )}
-
-                      {insight && (
-                        <>
-                          <Text className="mt-3 mb-2 font-semibold text-[#333] text-[14px]">
-                            Bot Insight (Updated today)
-                          </Text>
-                          <Text className="my-2 text-[#555] text-[13px] leading-normal">
-                            {insight.content.split("\n").slice(0, 2).join(" ")}
-                          </Text>
-                        </>
-                      )}
-
-                      <Hr className="my-[15px] border-[#eee] border-t" />
-                    </Section>
-                  );
-                })}
-              </Section>
-            ) : (
-              <Section className="mb-8 pb-5">
-                <Text className="m-0 mb-[15px] font-semibold text-[#333] text-[20px]">
-                  New Sites (Past 24h)
-                </Text>
-                <Text className="text-[#999] text-[14px] italic">
-                  None in the past 24 hours.
-                </Text>
-              </Section>
-            )}
-
-            {/* Account Metrics Section */}
-            <Section className="mb-8 pb-5">
-              <Text className="m-0 mb-[15px] font-semibold text-[#333] text-[20px]">
-                Account Metrics (Citation Query Score)
-              </Text>
-              {newSitesWithMetrics.map(({ site, citationScores }) => {
-                const change = citationScores.current - citationScores.previous;
-                const changePercent =
-                  citationScores.previous === 0
-                    ? citationScores.current > 0
-                      ? 100
-                      : 0
-                    : (change / citationScores.previous) * 100;
-                const changeColor =
-                  change > 0 ? "#28a745" : change < 0 ? "#dc3545" : "#6c757d";
-
-                return (
-                  <Section
-                    key={site.id}
-                    className="mb-[15px] rounded bg-[#f9f9f9] p-[15px]"
-                  >
-                    <Row>
-                      <Text className="m-0 font-semibold text-[#1a1a1a] text-[15px]">
-                        {site.account.hostname || site.account.id}
-                      </Text>
-                    </Row>
-                    <Row>
-                      <Text className="my-1 text-[#555] text-[13px]">
-                        Current: <strong>{citationScores.current}</strong> |
-                        Previous 24h: {citationScores.previous}
-                      </Text>
-                    </Row>
-                    <Row>
-                      <Text
-                        className="my-1 text-[13px]"
-                        style={{ color: changeColor }}
-                      >
-                        Change: {change > 0 ? "+" : ""}
-                        {change} ({changePercent > 0 ? "+" : ""}
-                        {changePercent.toFixed(2)}%)
-                      </Text>
-                    </Row>
-                  </Section>
-                );
-              })}
-            </Section>
-
-            {/* Footer */}
-            <Hr className="my-[30px] mb-[20px] border-[#eee] border-t" />
-            <Section className="text-center">
-              <Text className="m-0 text-[#999] text-[12px] italic">
-                This is an automated report sent daily at 6 AM Pacific. Do not
-                reply to this email.
-              </Text>
-            </Section>
-          </Container>
-        </Tailwind>
-      </Body>
-    </Html>
+          );
+        })}
+      </Section>
+    </EmailLayout>
   );
 }

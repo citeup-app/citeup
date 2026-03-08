@@ -11,7 +11,7 @@ import {
   FieldSet,
 } from "~/components/ui/FieldSet";
 import { Input } from "~/components/ui/Input";
-import { sendPasswordRecoveryEmail } from "~/lib/email.server";
+import sendPasswordRecoveryEmail from "~/lib/emails/PasswordRecovery";
 import prisma from "~/lib/prisma.server";
 import type { Route } from "./+types/route";
 
@@ -30,7 +30,10 @@ export async function action({ request }: Route.ActionArgs) {
     });
 
     try {
-      await sendPasswordRecoveryEmail(email, token);
+      await sendPasswordRecoveryEmail({
+        to: email,
+        url: new URL(`/reset-password/${token}`, request.url).toString(),
+      });
     } catch {
       captureException(new Error("Failed to send password recovery email"));
     }

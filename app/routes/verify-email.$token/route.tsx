@@ -6,7 +6,7 @@ import AuthForm from "~/components/ui/AuthForm";
 import { Button } from "~/components/ui/Button";
 import { FieldSet } from "~/components/ui/FieldSet";
 import { createEmailVerificationToken } from "~/lib/auth.server";
-import { sendEmailVerificationEmail } from "~/lib/email.server";
+import sendEmailVerificationEmail from "~/lib/emails/EmailVerification";
 import prisma from "~/lib/prisma.server";
 import type { Route } from "./+types/route";
 
@@ -36,7 +36,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   return redirect("/");
 }
 
-export async function action({ params }: Route.ActionArgs) {
+export async function action({ params, request }: Route.ActionArgs) {
   const { token } = params;
 
   const record = await prisma.emailVerificationToken.findUnique({
@@ -49,7 +49,10 @@ export async function action({ params }: Route.ActionArgs) {
   if (record?.user && !record.user.emailVerifiedAt) {
     const newToken = await createEmailVerificationToken(record.user.id);
     try {
-      await sendEmailVerificationEmail(record.user.email, newToken);
+      await sendEmailVerificationEmail({
+        to: record.user.email,
+        url: new URL(`/verify-email/${newToken}`, request.url).toString(),
+      });
     } catch {
       captureException(new Error("Failed to send verification email"));
     }

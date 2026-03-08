@@ -3,7 +3,6 @@ import { ms } from "convert";
 import debug from "debug";
 import { delay, invariant, withTimeout } from "es-toolkit";
 import Redis from "ioredis";
-import type { FunctionComponent } from "react";
 import { Resend } from "resend";
 import envVars from "~/lib/envVars";
 
@@ -31,7 +30,7 @@ export async function sendEmail({
   subject,
   to,
 }: {
-  render: FunctionComponent;
+  render: ({ subject }: { subject: string }) => React.ReactNode;
   subject: string;
   to: string;
 }): Promise<string> {

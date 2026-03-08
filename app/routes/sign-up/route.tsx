@@ -16,7 +16,7 @@ import {
   createSession,
   hashPassword,
 } from "~/lib/auth.server";
-import { sendEmailVerificationEmail } from "~/lib/email.server";
+import sendEmailVerificationEmail from "~/lib/emails/EmailVerification";
 import prisma from "~/lib/prisma.server";
 import type { Route } from "./+types/route";
 
@@ -55,7 +55,10 @@ export async function action({ request }: Route.ActionArgs) {
 
   try {
     const verifyToken = await createEmailVerificationToken(user.id);
-    await sendEmailVerificationEmail(user.email, verifyToken);
+    await sendEmailVerificationEmail({
+      to: user.email,
+      url: new URL(`/verify-email/${verifyToken}`, request.url).toString(),
+    });
   } catch {
     captureException(new Error("Failed to send verification email"));
   }
