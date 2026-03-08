@@ -1,3 +1,4 @@
+import { CSPProvider } from "@base-ui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
@@ -57,11 +58,14 @@ export default function PageLayout({
           {hideLayout ? (
             children
           ) : (
-            <div className="isolate flex min-h-screen flex-col">
-              <PageHeader />
-              {children}
-              <PageFooter />
-            </div>
+            <CSPProvider disableStyleElements>
+              {/* @see https://base-ui.com/react/overview/quick-start */}
+              <div className="relative isolate flex min-h-screen flex-col">
+                <PageHeader />
+                {children}
+                <PageFooter />
+              </div>
+            </CSPProvider>
           )}
         </QueryClientProvider>
         <DevTag />

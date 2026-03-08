@@ -25,6 +25,7 @@
 		"@base-ui/react": "^1.2.0",
 		"@forge42/seo-tools": "^1.4.5",
 		"@js-temporal/polyfill": "^0.5.1",
+		"@logtail/node": "^0.5.8",
 		"@prisma/adapter-pg": "^7.4.2",
 		"@prisma/client": "^7.4.2",
 		"@radix-ui/react-dialog": "^1.1.15",

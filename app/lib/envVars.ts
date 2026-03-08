@@ -2,8 +2,8 @@ import dotenv from "dotenv";
 import env from "env-var";
 
 dotenv.config({
-  path: process.env.NODE_ENV === "test" ? ".env.test" : ".env",
-  override: true,
+  // path: process.env.NODE_ENV === "test" ? ".env.test" : ".env",
+  // override: true,
   quiet: true,
 });
 
@@ -20,6 +20,8 @@ const envVars = {
     .get("GOOGLE_GENERATIVE_AI_API_KEY")
     .required(false)
     .asString(),
+  LOGTAIL_ENDPOINT: env.get("LOGTAIL_ENDPOINT").required(false).asUrlString(),
+  LOGTAIL_TOKEN: env.get("LOGTAIL_TOKEN").required(false).asString(),
   OPENAI_API_KEY: env.get("OPENAI_API_KEY").required(false).asString(),
   PERPLEXITY_API_KEY: env.get("PERPLEXITY_API_KEY").required(false).asString(),
   REDIS_URL: env.get("REDIS_URL").required().asString(),

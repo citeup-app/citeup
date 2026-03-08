@@ -1,7 +1,9 @@
+import { Logtail } from "@logtail/node";
 import { logger } from "@sentry/react-router";
 import { createWriteStream } from "node:fs";
 import { resolve } from "node:path";
 import { format, styleText } from "node:util";
+import envVars from "./envVars";
 
 const colors = {
   trace: (text: string) => styleText("gray", text),
@@ -13,15 +15,22 @@ const colors = {
 };
 
 const logFile =
-  process.env.NODE_ENV === "test"
-    ? createWriteStream(resolve("server.log"), { flags: "a" })
-    : null;
+  process.env.NODE_ENV === "test" &&
+  createWriteStream(resolve("server.log"), { flags: "a" });
+
+const logtail =
+  envVars.LOGTAIL_TOKEN &&
+  envVars.LOGTAIL_ENDPOINT &&
+  new Logtail(envVars.LOGTAIL_TOKEN, {
+    endpoint: envVars.LOGTAIL_ENDPOINT,
+  });
 
 // @see https://no-color.org
 const isColorEnabled = !process.env.NO_COLOR;
 
 for (const level of ["debug", "error", "info", "log", "trace", "warn"]) {
-  const logtailFunction = Reflect.get(logger, level);
+  const sentryFunction = Reflect.get(logger, level);
+  const logtailFunction = logtail ? Reflect.get(logtail, level) : () => {};
   const colorCode = colors[level as keyof typeof colors];
 
   Reflect.set(console, level, (message: string, ...metadata: unknown[]) => {
@@ -34,8 +43,10 @@ for (const level of ["debug", "error", "info", "log", "trace", "warn"]) {
     );
 
     try {
+      if (sentryFunction)
+        sentryFunction.call(logger, formattedMessage, ...metadata);
       if (logtailFunction)
-        logtailFunction.call(logger, formattedMessage, ...metadata);
+        logtailFunction.call(logtail, formattedMessage, ...metadata);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
