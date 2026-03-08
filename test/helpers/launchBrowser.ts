@@ -27,7 +27,6 @@ const logger = debug("browser");
 export async function goto(path: string, headers?: HeadersInit): Promise<Page> {
   const context = await newContext();
   const page = await context.newPage();
-  await page.setViewportSize({ width: 1024, height: 667 });
   await page.setExtraHTTPHeaders(Object.fromEntries(new Headers(headers)));
   await page.goto(path, { timeout: ms("30s") });
 
