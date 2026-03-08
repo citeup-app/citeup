@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { redirect } from "react-router";
+import "server-only";
 import {
   type UtmCookieData,
   sessionCookie,

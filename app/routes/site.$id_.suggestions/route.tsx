@@ -1,3 +1,4 @@
+import { captureException as sentryCaptureException } from "@sentry/react-router";
 import { groupBy, sortBy } from "es-toolkit";
 import { AlertCircleIcon, CoffeeIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { Component, useState } from "react";
@@ -32,7 +33,7 @@ class SuggestionsErrorBoundary extends Component<
 
   componentDidCatch(error: Error) {
     console.error("[SuggestionsErrorBoundary]", error);
-    captureException(error);
+    sentryCaptureException(error);
   }
 
   render() {
