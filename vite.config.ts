@@ -7,7 +7,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig(async (config) =>
   mergeConfig(config, {
     build: {
-      sourcemap: true,
+      sourcemap: false,
     },
     resolve: {
       dedupe: ["react", "react-dom", "react-router"],
