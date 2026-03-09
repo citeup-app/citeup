@@ -3,6 +3,7 @@ import { groupBy, sortBy } from "es-toolkit";
 import { AlertCircleIcon, CoffeeIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { Component, useState } from "react";
 import { redirect, useFetcher } from "react-router";
+import { useInterval } from "usehooks-ts";
 import z from "zod";
 import { ActiveLink } from "~/components/ui/ActiveLink";
 import { Alert, AlertTitle } from "~/components/ui/Alert";
@@ -10,6 +11,7 @@ import { Button } from "~/components/ui/Button";
 import { Card, CardContent } from "~/components/ui/Card";
 import { Input } from "~/components/ui/Input";
 import Main from "~/components/ui/Main";
+import ProgressIndicator from "~/components/ui/ProgressIndicator";
 import Spinner from "~/components/ui/Spinner";
 import addSiteQueries from "~/lib/addSiteQueries";
 import { requireUser } from "~/lib/auth.server";
@@ -106,6 +108,15 @@ export default function Index({ loaderData }: Route.ComponentProps) {
   const fetcher = useFetcher<typeof action>();
   const isProcessing = fetcher.state !== "idle";
 
+  // We want to show progress for 120 seconds and increment every 300ms,
+  // so we need to increment by X percentage every 300ms.
+  const [progress, setProgress] = useState(0);
+  const increment = (300 * 100) / 120_000;
+  useInterval(() => {
+    if (fetcher.state === "submitting")
+      setProgress((progress) => (progress >= 100 ? 100 : progress + increment));
+  }, 100);
+
   function addQuery(group: string) {
     const id = crypto.randomUUID();
     setSuggestions((prev) => [...prev, { id, group, query: "" }]);
@@ -190,7 +201,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
           ))}
         </div>
 
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-8">
           <Button
             onClick={() => {
               fetcher.submit(
@@ -207,6 +218,9 @@ export default function Index({ loaderData }: Route.ComponentProps) {
             {isProcessing && <Spinner />}
             {isProcessing ? "Saving…" : "Save queries"}
           </Button>
+
+          {isProcessing && <ProgressIndicator value={progress} />}
+
           <ActiveLink
             to={`/site/${loaderData.siteId}`}
             className="text-base text-foreground/60 underline"

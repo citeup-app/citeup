@@ -36,8 +36,6 @@ references.`,
     maxRetries: process.env.NODE_ENV === "production" ? 2 : 0,
   });
 
-  console.log("%o", providerMetadata?.google.groundingMetadata, text);
-
   const metadata = providerMetadata?.google.groundingMetadata as {
     webSearchQueries?: string[];
     groundingChunks?: { web: { uri: string; title: string } }[];
