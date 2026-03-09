@@ -1,5 +1,4 @@
 import { reactRouter } from "@react-router/dev/vite";
-import { sentryReactRouter } from "@sentry/react-router";
 import tailwindcss from "@tailwindcss/vite";
 import { type UserConfig, defineConfig, mergeConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
@@ -7,7 +6,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig(async (config) =>
   mergeConfig(config, {
     build: {
-      sourcemap: false,
+      sourcemap: true,
     },
     resolve: {
       dedupe: ["react", "react-dom", "react-router"],
@@ -16,15 +15,6 @@ export default defineConfig(async (config) =>
       tailwindcss(),
       reactRouter(),
       tsconfigPaths(),
-      sentryReactRouter(
-        {
-          authToken: process.env.SENTRY_AUTH_TOKEN,
-          org: "labnotes",
-          project: "citeup",
-          telemetry: false,
-        },
-        config,
-      ),
     ],
     ssr: {
       noExternal: [

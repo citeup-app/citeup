@@ -60,15 +60,18 @@ export async function sendEmail({
  * We use different processes for sending emails (Vite worker) and for checking
  * on them (test process), so we use Redis to communicate between the two.
  */
-const subscriber = new Redis(envVars.REDIS_URL);
-const publisher = new Redis(envVars.REDIS_URL);
+let subscriber: Redis | null = null;
+let publisher: Redis | null = null;
 let redisInitialized = false;
 
 function initRedis() {
   if (process.env.NODE_ENV !== "test") return;
   if (redisInitialized) return;
+  redisInitialized = true;
 
   try {
+    subscriber = new Redis(envVars.REDIS_URL);
+    publisher = new Redis(envVars.REDIS_URL);
     subscriber.on("message", (channel: string, message: unknown) => {
       if (channel === "email:last")
         lastEmailSent = message
@@ -79,7 +82,6 @@ function initRedis() {
   } catch (error) {
     logger("Failed to initialize Redis: %O", error);
   }
-  redisInitialized = true;
 }
 
 /**

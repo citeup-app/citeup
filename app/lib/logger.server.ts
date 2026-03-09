@@ -23,7 +23,7 @@ const logtail =
   envVars.LOGTAIL_ENDPOINT &&
   new Logtail(envVars.LOGTAIL_TOKEN, {
     endpoint: envVars.LOGTAIL_ENDPOINT,
-    sendLogsToConsoleOutput: true,
+    sendLogsToConsoleOutput: false,
     sendLogsToBetterStack: true,
   });
 
