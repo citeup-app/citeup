@@ -1,6 +1,7 @@
 allowedDeprecatedVersions:
 
 ignoredBuiltDependencies:
+  - libpq
 
 minimumReleaseAge: 0
 minimumReleaseAgeExclude:
