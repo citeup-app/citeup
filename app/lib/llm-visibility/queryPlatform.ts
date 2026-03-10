@@ -1,4 +1,5 @@
 import type { Temporal } from "@js-temporal/polyfill";
+import { ms } from "convert";
 import debug from "debug";
 import captureException from "~/lib/captureException.server";
 import prisma from "~/lib/prisma.server";
@@ -19,8 +20,6 @@ const logger = debug("server");
  * @param platform - The platform to query.
  * @param queries - The queries to query.
  * @param queryFn - The function to use to query the LLM.
- * @param repetitions - The number of times to repeat each query. If the last *
- *  query is newer than this date, the queries will not be queried again.
  * @param site - The site to query.
  */
 export default async function queryPlatform({
@@ -30,7 +29,6 @@ export default async function queryPlatform({
   platform,
   queries,
   queryFn,
-  repetitions,
   site,
 }: {
   accountId: string;
@@ -39,7 +37,6 @@ export default async function queryPlatform({
   platform: string;
   queries: { query: string; group: string }[];
   queryFn: QueryFn;
-  repetitions: number;
   site: { id: string; domain: string };
 }) {
   try {
@@ -68,19 +65,16 @@ export default async function queryPlatform({
 
     for (let qi = 0; qi < queries.length; qi++) {
       const query = queries[qi];
-      for (let repetition = 1; repetition <= repetitions; repetition++) {
-        await singleQueryRepetition({
-          accountId,
-          group: query.group,
-          modelId,
-          platform,
-          query: query.query,
-          queryFn,
-          repetition,
-          runId: run.id,
-          site,
-        });
-      }
+      await singleQueryRepetition({
+        accountId,
+        group: query.group,
+        modelId,
+        platform,
+        query: query.query,
+        queryFn,
+        runId: run.id,
+        site,
+      });
     }
   } catch (error) {
     captureException(error, {
@@ -96,7 +90,6 @@ async function singleQueryRepetition({
   platform,
   query,
   queryFn,
-  repetition,
   runId,
   site,
 }: {
@@ -106,19 +99,17 @@ async function singleQueryRepetition({
   platform: string;
   query: string;
   queryFn: QueryFn;
-  repetition: number;
   runId: string;
   site: { id: string; domain: string };
 }): Promise<void> {
   const existing = await prisma.citationQuery.findFirst({
-    where: { query, repetition, runId },
+    where: { query, runId },
   });
   if (existing) {
     logger(
-      "[%s:%s] Repetition %d: %s (group: %s) — already exists",
+      "[%s:%s] %s (group: %s) — already exists",
       site.id,
       platform,
-      repetition,
       query,
       group,
     );
@@ -127,21 +118,18 @@ async function singleQueryRepetition({
 
   try {
     await checkUsageLimits(accountId);
-    const { citations, extraQueries, text, usage } = await queryFn(query);
+    const { citations, extraQueries, text, usage } = await queryFn({
+      maxRetries: import.meta.env.PROD ? 2 : 0,
+      timeout: ms("10s"),
+      query,
+    });
     await recordUsageEvent({
       accountId,
       model: modelId,
       inputTokens: usage.inputTokens ?? 0,
       outputTokens: usage.outputTokens ?? 0,
     });
-    logger(
-      "[%s:%s] Repetition %d: %s (group: %s)",
-      site.id,
-      platform,
-      repetition,
-      query,
-      group,
-    );
+    logger("[%s:%s] %s (group: %s)", site.id, platform, query, group);
     const index = citations.findIndex(
       (url) => new URL(url).hostname === site.domain,
     );
@@ -153,7 +141,6 @@ async function singleQueryRepetition({
         extraQueries,
         position: index >= 0 ? index : null,
         query,
-        repetition,
         runId,
         text,
       },
@@ -166,7 +153,6 @@ async function singleQueryRepetition({
         runId,
         query,
         group,
-        repetition,
       },
     });
   }

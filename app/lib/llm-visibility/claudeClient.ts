@@ -3,7 +3,15 @@ import { generateText } from "ai";
 import { haiku } from "./anthropic";
 import type { QueryFn } from "./queryFn";
 
-export default async function queryClaude(query: string): ReturnType<QueryFn> {
+export default async function queryClaude({
+  maxRetries,
+  timeout,
+  query,
+}: {
+  maxRetries: number;
+  timeout: number;
+  query: string;
+}): ReturnType<QueryFn> {
   const { sources, text, usage } = await generateText({
     model: haiku,
     prompt: [
@@ -25,7 +33,8 @@ references.`,
       web_search: anthropic.tools.webSearch_20250305({}),
     },
     toolChoice: { type: "tool", toolName: "web_search" },
-    maxRetries: import.meta.env.PROD ? 2 : 0,
+    maxRetries,
+    timeout,
   });
   const citations = sources
     .filter((source) => source.sourceType === "url")

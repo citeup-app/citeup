@@ -6,9 +6,15 @@ import type { QueryFn } from "./queryFn";
 
 const MODEL_ID = "sonar";
 
-export default async function queryPerplexity(
-  query: string,
-): ReturnType<QueryFn> {
+export default async function queryPerplexity({
+  maxRetries,
+  timeout,
+  query,
+}: {
+  maxRetries: number;
+  timeout: number;
+  query: string;
+}): ReturnType<QueryFn> {
   invariant(envVars.PERPLEXITY_API_KEY, "PERPLEXITY_API_KEY is not set");
 
   const perplexity = createPerplexity({
@@ -32,7 +38,8 @@ with numbered references.`,
       },
     ],
     maxOutputTokens: 2000,
-    maxRetries: import.meta.env.PROD ? 2 : 0,
+    maxRetries,
+    timeout,
   });
   const citations = sources
     .filter((source) => source.sourceType === "url")

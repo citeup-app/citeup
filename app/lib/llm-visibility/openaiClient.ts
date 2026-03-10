@@ -7,7 +7,15 @@ import type { QueryFn } from "./queryFn";
 
 const MODEL_ID = "gpt-5-chat-latest";
 
-export default async function openaiClient(query: string): ReturnType<QueryFn> {
+export default async function openaiClient({
+  maxRetries,
+  query,
+  timeout,
+}: {
+  maxRetries: number;
+  query: string;
+  timeout: number;
+}): ReturnType<QueryFn> {
   invariant(envVars.OPENAI_API_KEY, "OPENAI_API_KEY is not set");
 
   const { sources, text, usage } = await generateText({
@@ -39,7 +47,8 @@ references.`,
       }),
     },
     toolChoice: { type: "tool", toolName: "web_search" },
-    maxRetries: import.meta.env.PROD ? 2 : 0,
+    maxRetries,
+    timeout,
   });
   const citations = (sources as LanguageModelV3Source[])
     .filter((s) => s.sourceType === "url")

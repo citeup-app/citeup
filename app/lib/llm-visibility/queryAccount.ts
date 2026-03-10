@@ -16,17 +16,14 @@ import {
  *
  * @param site - The site to query.
  * @param queries - The queries to query.
- * @param repetitions - The number of times to repeat each query. Defaults to 1.
  * @returns The results of the queries.
  */
 export default async function queryAccount({
   site,
   queries,
-  repetitions = 1,
 }: {
   site: Site;
   queries: { query: string; group: string }[];
-  repetitions?: number;
 }) {
   const newerThan = Temporal.Now.instant()
     .subtract({ hours: 24 })
@@ -41,7 +38,6 @@ export default async function queryAccount({
       platform: "chatgpt",
       queries,
       queryFn: openaiClient,
-      repetitions,
       site,
     }),
 
@@ -52,7 +48,6 @@ export default async function queryAccount({
       platform: "perplexity",
       queries,
       queryFn: queryPerplexity,
-      repetitions,
       site,
     }),
 
@@ -63,7 +58,6 @@ export default async function queryAccount({
       platform: "claude",
       queries,
       queryFn: queryClaude,
-      repetitions,
       site,
     }),
 
@@ -74,7 +68,6 @@ export default async function queryAccount({
       platform: "gemini",
       queries,
       queryFn: queryGemini,
-      repetitions,
       site,
     }),
   ]);

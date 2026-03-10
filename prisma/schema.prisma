@@ -65,7 +65,6 @@ model CitationQuery {
   run          CitationQueryRun @relation(fields: [runId], references: [id], onDelete: Cascade)
   query        String           @map("query")
   group        String           @map("group")
-  repetition   Int              @map("repetition")
   extraQueries String[]         @map("extra_queries")
   text         String           @map("text")
   position     Int?             @map("position")

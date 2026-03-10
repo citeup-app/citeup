@@ -6,7 +6,15 @@ import type { QueryFn } from "./queryFn";
 
 const MODEL_ID = "gemini-2.5-flash";
 
-export default async function queryGemini(query: string): ReturnType<QueryFn> {
+export default async function queryGemini({
+  maxRetries,
+  timeout,
+  query,
+}: {
+  maxRetries: number;
+  timeout: number;
+  query: string;
+}): ReturnType<QueryFn> {
   invariant(
     envVars.GOOGLE_GENERATIVE_AI_API_KEY,
     "GOOGLE_GENERATIVE_AI_API_KEY is not set",
@@ -33,7 +41,8 @@ references.`,
       web_search: google.tools.googleSearch({}),
     },
     toolChoice: { type: "tool", toolName: "web_search" },
-    maxRetries: process.env.NODE_ENV === "production" ? 2 : 0,
+    maxRetries,
+    timeout,
   });
 
   const metadata = providerMetadata?.google.groundingMetadata as {

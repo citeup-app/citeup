@@ -6,9 +6,19 @@
  * const { citations, queries } = await queryClaude("What is the capital of France?");
  * ```
  * @param query - The query to send to the LLM.
+ * @param maxRetries - The maximum number of retries to attempt.
+ * @param timeout - The timeout in milliseconds.
  * @returns { citations: string[]; queries: string[] } The citations and queries from the LLM response.
  */
-export type QueryFn = (query: string) => Promise<{
+export type QueryFn = ({
+  maxRetries,
+  query,
+  timeout,
+}: {
+  maxRetries: number;
+  query: string;
+  timeout: number;
+}) => Promise<{
   // URLs of the sources that were used to answer the query in order of
   // appearance. These are the URLs that will be used to check for visibility.
   citations: string[];
