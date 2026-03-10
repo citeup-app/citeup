@@ -42,6 +42,7 @@ export default function DeleteSiteDialog({
             disabled={isSubmitting}
             aria-label="Delete site"
             size="sm"
+            className="text-destructive"
           />
         }
       >

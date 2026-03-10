@@ -39,7 +39,7 @@ async function startServer() {
         sourcemap: true,
       },
       clearScreen: false,
-      logLevel: "info",
+      logLevel: "warn", // Reduced log level to avoid noise
       root: process.cwd(),
       optimizeDeps: {
         // List all hook-using packages here so Vite pre-bundles them in the

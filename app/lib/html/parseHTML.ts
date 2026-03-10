@@ -283,6 +283,28 @@ export function modifyElements(
   }
 }
 
+const blockElements = [
+  "p",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "blockquote",
+  "pre",
+  "ol",
+  "ul",
+  "li",
+  "dl",
+  "dt",
+  "dd",
+  "table",
+  "tr",
+  "td",
+  "th",
+];
+
 /**
  * Gets the text content of the HTML tree. The text content is the text of the
  * text nodes in the tree. The text content is not the text of the elements,
@@ -296,7 +318,11 @@ export function getTextContent(html: HTMLNode[]): string {
     .map((node) =>
       node.type === "text"
         ? decodeHTMLEntities(node.content)
-        : getTextContent(node.children),
+        : node.tag === "br"
+          ? "\n"
+          : blockElements.includes(node.tag)
+            ? `${getTextContent(node.children)}\n`
+            : getTextContent(node.children),
     )
     .join(" ");
 }

@@ -15,17 +15,22 @@ import Spinner from "~/components/ui/Spinner";
 import addSiteQueries from "~/lib/addSiteQueries";
 import { requireUser } from "~/lib/auth.server";
 import captureException from "~/lib/captureException.server";
+import generateSiteQueries from "~/lib/llm-visibility/generateSiteQueries";
 import queryGroups from "~/lib/llm-visibility/queryGroups";
 import prisma from "~/lib/prisma.server";
 import type { Route } from "./+types/route";
+import OurSource from "./OurSource";
 
 export async function loader({ request, params }: Route.LoaderArgs) {
-  await requireUser(request);
+  const user = await requireUser(request);
   const suggestions = await prisma.siteQuerySuggestion.findMany({
     where: { siteId: params.id },
   });
   if (suggestions.length === 0) throw redirect(`/site/${params.id}/queries`);
-  return { siteId: params.id, suggestions };
+  const site = await prisma.site.findFirst({
+    where: { id: params.id, accountId: user.accountId },
+  });
+  return { siteId: params.id, site, suggestions };
 }
 
 export function meta(): Route.MetaDescriptors {
@@ -35,18 +40,32 @@ export function meta(): Route.MetaDescriptors {
 export async function action({ params, request }: Route.ActionArgs) {
   try {
     const user = await requireUser(request);
-
     const site = await prisma.site.findFirst({
       where: { id: params.id, accountId: user.accountId },
     });
     if (!site) return { error: "Site not found" };
 
-    const raw = await request.json();
-    const queries = z
-      .array(z.object({ group: z.string(), query: z.string() }))
-      .parse(raw);
-    await addSiteQueries(site, queries);
-    return redirect(`/site/${params.id}/citations`);
+    switch (request.method) {
+      case "PUT": {
+        const formData = await request.formData();
+        const content = formData.get("content")?.toString() ?? "";
+        const site = await prisma.site.update({
+          where: { id: params.id, accountId: user.accountId },
+          data: { content },
+        });
+        await generateSiteQueries(site);
+        return { ok: true };
+      }
+
+      case "POST": {
+        const raw = await request.json();
+        const queries = z
+          .array(z.object({ group: z.string(), query: z.string() }))
+          .parse(raw);
+        await addSiteQueries(site, queries);
+        return { ok: true };
+      }
+    }
   } catch (error) {
     captureException(error);
     return {
@@ -179,7 +198,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
         </ActiveLink>
       </div>
 
-      {isProcessing && (
+      {isProcessing ? (
         <p className="flex flex-row items-start gap-2 text-base text-foreground/60">
           <span>
             <CoffeeIcon className="size-6" />
@@ -191,6 +210,8 @@ export default function Index({ loaderData }: Route.ComponentProps) {
             this page open to see the progress.
           </span>
         </p>
+      ) : (
+        <OurSource content={loaderData.site?.content ?? ""} />
       )}
     </Main>
   );
