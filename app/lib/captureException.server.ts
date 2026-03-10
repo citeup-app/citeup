@@ -1,5 +1,6 @@
 import { Logtail } from "@logtail/node";
 import { captureException as sentryCaptureException } from "@sentry/react-router";
+import debug from "debug";
 import { createWriteStream } from "node:fs";
 import { resolve } from "node:path";
 import type { Primitive } from "node_modules/zod/v3/helpers/typeAliases.cjs";
@@ -8,6 +9,8 @@ import envVars from "./envVars";
 const logFile =
   process.env.NODE_ENV === "test" &&
   createWriteStream(resolve("server.log"), { flags: "a" });
+
+const logger = debug("server");
 
 const logtail =
   envVars.LOGTAIL_TOKEN &&
@@ -29,10 +32,10 @@ export default function captureException(
   },
 ) {
   if (error instanceof Error) {
-    console.error(error.stack);
+    logger(error.stack);
     if (logFile) logFile.write(`${error.stack}\n`);
   } else {
-    console.error(error);
+    logger(error);
     if (logFile) logFile.write(`${error}\n`);
   }
 

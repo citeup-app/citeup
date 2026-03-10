@@ -153,21 +153,18 @@ describe("site page", () => {
     for (const { platform, model } of PLATFORMS) {
       for (let runIdx = 0; runIdx < runDays.length; runIdx++) {
         // Shift citation sets per run so visibility varies across history.
-        const queryData = QUERIES.flatMap(({ query, group }, qi) =>
-          ([1, 2, 3] as const).map((repetition, ri) => {
-            const { citations, position } =
-              CITATION_SETS[(qi * 3 + ri + runIdx) % CITATION_SETS.length];
-            return {
-              query,
-              group,
-              repetition,
-              text: `Response for "${query}".`,
-              citations,
-              position,
-              extraQueries: [] as string[],
-            };
-          }),
-        );
+        const queryData = QUERIES.flatMap(({ query, group }, qi) => {
+          const { citations, position } =
+            CITATION_SETS[(qi * 3 + runIdx) % CITATION_SETS.length];
+          return {
+            query,
+            group,
+            text: `Response for "${query}".`,
+            citations,
+            position,
+            extraQueries: [] as string[],
+          };
+        });
 
         await prisma.citationQueryRun.create({
           data: {
