@@ -7,7 +7,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "~/components/ui/Chart";
-import type { Run } from "./RecentVisibility";
+import type { Prisma } from "~/prisma";
 
 const chartConfig = {
   visibilityPct: { label: "Visibility %", color: "var(--chart-1)" },
@@ -20,7 +20,9 @@ type ChartKey = (typeof CHART_KEYS)[number];
 
 type RunPoint = { date: string } & Record<ChartKey, number>;
 
-function runToPoint(run: Run): RunPoint {
+function runToPoint(
+  run: Prisma.CitationQueryRunGetPayload<{ include: { queries: true } }>,
+): RunPoint {
   const { queries } = run;
   if (queries.length === 0) {
     return {
@@ -59,7 +61,11 @@ function runToPoint(run: Run): RunPoint {
   };
 }
 
-export default function VisibilityCharts({ runs }: { runs: Run[] }) {
+export default function VisibilityCharts({
+  runs,
+}: {
+  runs: Prisma.CitationQueryRunGetPayload<{ include: { queries: true } }>[];
+}) {
   const data = runs.map(runToPoint);
 
   return (

@@ -16,35 +16,13 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/Table";
+import type { CitationQuery, Prisma } from "~/prisma";
 
-type Query = {
-  id: string;
-  query: string;
-  group: string;
-  repetition: number;
-  position: number | null;
-  citations: string[];
-};
-
-export type Run = {
-  id: string;
-  platform: string;
-  model: string;
-  createdAt: Date;
-  queries: Query[];
-};
-
-type QueryAggregate = {
-  query: string;
-  group: string;
+function computeMetrics(reps: CitationQuery[]): {
   visibilityPct: number;
   avgCitations: number;
   score: number;
-};
-
-function computeMetrics(
-  reps: Query[],
-): Omit<QueryAggregate, "query" | "group"> {
+} {
   if (reps.length === 0) return { visibilityPct: 0, avgCitations: 0, score: 0 };
 
   const visibilityPct = mean(reps.map((q) => (q.position !== null ? 100 : 0)));
@@ -60,16 +38,18 @@ function computeMetrics(
   return { visibilityPct, avgCitations, score };
 }
 
-export default function RecentVisibility({ run }: { run: Run }) {
+export default function RecentVisibility({
+  run,
+}: {
+  run: Prisma.CitationQueryRunGetPayload<{ include: { queries: true } }>;
+}) {
   const grouped = groupBy(run.queries, (q) => q.query);
 
-  const aggregates: QueryAggregate[] = Object.entries(grouped).map(
-    ([query, reps]) => ({
-      query,
-      group: reps[0].group,
-      ...computeMetrics(reps),
-    }),
-  );
+  const aggregates = Object.entries(grouped).map(([query, reps]) => ({
+    query,
+    group: reps[0].group,
+    ...computeMetrics(reps),
+  }));
 
   const totals = {
     visibilityPct: mean(aggregates.map((a) => a.visibilityPct)) || 0,

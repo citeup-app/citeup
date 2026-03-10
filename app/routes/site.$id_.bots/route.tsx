@@ -18,8 +18,8 @@ import NoTraffic from "./NoTraffic";
 
 export const handle = { siteNav: true };
 
-export function meta({ data }: Route.MetaArgs) {
-  return [{ title: `Bot Traffic — ${data?.site.domain} | CiteUp` }];
+export function meta({ loaderData }: Route.MetaArgs) {
+  return [{ title: `Bot Traffic — ${loaderData?.site.domain} | CiteUp` }];
 }
 
 export async function loader({ request, params }: Route.LoaderArgs) {

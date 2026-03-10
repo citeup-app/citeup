@@ -17,8 +17,8 @@ const PLATFORMS = [
   { name: "gemini", label: "Gemini" },
 ] as const;
 
-export function meta({ data }: Route.MetaArgs) {
-  return [{ title: `Citations — ${data?.site.domain} | CiteUp` }];
+export function meta({ loaderData }: Route.MetaArgs) {
+  return [{ title: `Citations — ${loaderData?.site.domain} | CiteUp` }];
 }
 
 export async function loader({ request, params }: Route.LoaderArgs) {

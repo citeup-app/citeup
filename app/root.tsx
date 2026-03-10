@@ -32,8 +32,10 @@ export async function loader({ request }: Route.LoaderArgs) {
   return { user, baseUrl, sites };
 }
 
-export function meta({ data }: Route.MetaArgs): Route.MetaDescriptors {
-  const ogImage = data ? `${data.baseUrl}/og-image.png` : "/og-image.png";
+export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
+  const ogImage = loaderData
+    ? `${loaderData.baseUrl}/og-image.png`
+    : "/og-image.png";
   return [
     { title: "CiteUp — Monitor LLM citation visibility" },
     {
