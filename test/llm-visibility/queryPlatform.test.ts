@@ -77,7 +77,7 @@ describe("queryPlatform", () => {
   });
 
   it(
-    "creates a run and stores citation queries for each query x repetition",
+    "should create a run and store citation queries for each query",
     { timeout: 30_000 },
     async () => {
       let callIndex = 0;
@@ -93,28 +93,33 @@ describe("queryPlatform", () => {
       const run = await prisma.citationQueryRun.findFirst({
         where: { siteId: site.id, platform: "claude" },
         include: {
-          queries: { orderBy: [{ query: "asc" }] },
+          queries: {
+            orderBy: [{ group: "asc" }, { query: "asc" }],
+          },
         },
       });
 
       invariant(run, "run is not null");
       expect(run.model).toBe("claude-haiku-4-5-20251001");
-      expect(run.queries).toHaveLength(6); // 2 queries × 3 repetitions
-      expect(queryFn).toHaveBeenCalledTimes(6);
+      expect(run.queries).toHaveLength(2);
+      expect(run.queries[0].citations).toHaveLength(2);
+      expect(run.queries[1].citations).toHaveLength(3);
+      expect(queryFn).toHaveBeenCalledTimes(2);
 
       // Ordered alphabetically: "Find..." before "How..."
       // "Find..." reps 1-3 map to citationSets 3,4,5 (indices 0,1,2)
-      const [find1, find2, find3, how1, how2, how3] = run.queries;
 
-      expect(find1.group).toBe("2. active_search");
-      expect(find1.position).toBe(0); // rentail.space at index 0
-      expect(find2.position).toBe(2); // rentail.space at index 2
-      expect(find3.position).toBeNull(); // not present
+      expect(run.queries[0].group).toBe("1. discovery");
+      expect(run.queries[0].query).toBe(
+        "How do I find short-term retail space in shopping malls?",
+      );
+      expect(run.queries[0].position).toBe(0);
 
-      expect(how1.group).toBe("1. discovery");
-      expect(how1.position).toBe(0);
-      expect(how2.position).toBe(2);
-      expect(how3.position).toBeNull();
+      expect(run.queries[1].group).toBe("2. active_search");
+      expect(run.queries[1].query).toBe(
+        "Find available temporary retail space in shopping centers",
+      );
+      expect(run.queries[1].position).toBe(2);
     },
   );
 
@@ -136,13 +141,13 @@ describe("queryPlatform", () => {
   );
 
   it(
-    "final db state: exactly 1 run with 6 citation_queries with correct fields",
+    "should create a run and store citation queries for each query",
     { timeout: 30_000 },
     async () => {
       const runs = await prisma.citationQueryRun.findMany({
         where: { siteId: site.id },
         include: {
-          queries: { orderBy: [{ query: "asc" }] },
+          queries: { orderBy: [{ group: "asc" }, { query: "asc" }] },
         },
       });
 
@@ -152,22 +157,20 @@ describe("queryPlatform", () => {
       expect(run.platform).toBe("claude");
       expect(run.model).toBe("claude-haiku-4-5-20251001");
       expect(run.siteId).toBe(site.id);
-      expect(run.queries).toHaveLength(6);
+      expect(run.queries).toHaveLength(2);
+      expect(run.queries[0].citations).toHaveLength(2);
+      expect(run.queries[1].citations).toHaveLength(3);
 
-      // Ordered by query ASC, repetition ASC: "Find..." before "How..."
-      const [find1, find2, find3, how1, how2, how3] = run.queries;
+      expect(run.queries[0]).toMatchObject({
+        citations: ["https://rentail.space/listings", "https://other.com"],
+        text: "You can find short-term retail space on rentail.space.",
+        position: 0,
+        extraQueries: [],
+      });
 
-      expect(find1).toMatchObject({
+      expect(run.queries[1]).toMatchObject({
         query: "Find available temporary retail space in shopping centers",
         group: "2. active_search",
-        repetition: 1,
-        citations: ["https://rentail.space/listings", "https://other.com"],
-        text: "You can find short-term retail space on rentail.space.",
-        position: 0,
-        extraQueries: [],
-      });
-      expect(find2).toMatchObject({
-        repetition: 2,
         citations: [
           "https://other.com",
           "https://example.com",
@@ -175,41 +178,6 @@ describe("queryPlatform", () => {
         ],
         text: "Platforms like rentail.space offer temporary retail options.",
         position: 2,
-        extraQueries: [],
-      });
-      expect(find3).toMatchObject({
-        repetition: 3,
-        citations: ["https://example.com", "https://unrelated.com"],
-        text: "Shopping centers often have specialty leasing programs.",
-        position: null,
-        extraQueries: [],
-      });
-
-      expect(how1).toMatchObject({
-        query: "How do I find short-term retail space in shopping malls?",
-        group: "1. discovery",
-        repetition: 1,
-        citations: ["https://rentail.space/listings", "https://other.com"],
-        text: "You can find short-term retail space on rentail.space.",
-        position: 0,
-        extraQueries: [],
-      });
-      expect(how2).toMatchObject({
-        repetition: 2,
-        citations: [
-          "https://other.com",
-          "https://example.com",
-          "https://rentail.space/faq",
-        ],
-        text: "Platforms like rentail.space offer temporary retail options.",
-        position: 2,
-        extraQueries: [],
-      });
-      expect(how3).toMatchObject({
-        repetition: 3,
-        citations: ["https://example.com", "https://unrelated.com"],
-        text: "Shopping centers often have specialty leasing programs.",
-        position: null,
         extraQueries: [],
       });
     },
