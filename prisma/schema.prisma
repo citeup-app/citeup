@@ -18,8 +18,9 @@ model Account {
   id        String                      @id @default(cuid())
   createdAt DateTime @map("created_at") @default(now())
   hostname  String?  @map("hostname")
-  users     User[]
-  sites     Site[]
+  users       User[]
+  sites       Site[]
+  usageEvents UsageEvent[]
 
   @@map("accounts")
 }
@@ -174,6 +175,22 @@ model SiteQuerySuggestion {
 
   @@index([siteId])
   @@map("site_query_suggestions")
+}
+
+model UsageEvent {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now()) @map("created_at")
+  accountId    String   @map("account_id")
+  account      Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  platform     String   @map("platform")
+  model        String   @map("model")
+  inputTokens  Int      @default(0) @map("input_tokens")
+  outputTokens Int      @default(0) @map("output_tokens")
+  requests     Int      @default(1)
+  costUsd      Decimal  @db.Decimal(10, 6) @map("cost_usd")
+
+  @@index([accountId, createdAt])
+  @@map("usage_events")
 }
 
 model User {
