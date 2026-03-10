@@ -3,7 +3,7 @@ allowedDeprecatedVersions:
 ignoredBuiltDependencies:
   - libpq
 
-minimumReleaseAge: 0
+minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   - "@biomejs/biome"
   - "@biomejs/*"
