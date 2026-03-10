@@ -48,14 +48,11 @@ export default function RecentVisibility({
   const aggregates = Object.entries(grouped).map(([query, reps]) => ({
     query,
     group: reps[0].group,
-    ...computeMetrics(reps),
+    positions: reps.map((q) => (q.position ? +q.position + 1 : null)),
+    score: mean(
+      reps.map((q) => (q.position === null ? 0 : q.position === 0 ? 50 : 10)),
+    ),
   }));
-
-  const totals = {
-    visibilityPct: mean(aggregates.map((a) => a.visibilityPct)) || 0,
-    avgCitations: mean(aggregates.map((a) => a.avgCitations)) || 0,
-    score: mean(aggregates.map((a) => a.score)) || 0,
-  };
 
   return (
     <Card>
@@ -69,13 +66,10 @@ export default function RecentVisibility({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="font-bold text-foreground">Query</TableHead>
               <TableHead className="font-bold text-foreground">Group</TableHead>
+              <TableHead className="font-bold text-foreground">Query</TableHead>
               <TableHead className="text-right font-bold text-foreground">
-                Visibility
-              </TableHead>
-              <TableHead className="text-right font-bold text-foreground">
-                Avg Citations
+                Positions
               </TableHead>
               <TableHead className="text-right font-bold text-foreground">
                 Score
@@ -87,21 +81,19 @@ export default function RecentVisibility({
               <TableRow
                 key={agg.query}
                 className={twMerge(
-                  agg.visibilityPct > 0 && "bg-green-100 hover:bg-green-100/80",
+                  agg.positions.some((p) => p !== null) &&
+                    "bg-green-100 hover:bg-green-100/80",
                 )}
               >
-                <TableCell className="max-w-xs truncate">{agg.query}</TableCell>
                 <TableCell className="text-foreground/60 text-xs">
                   {agg.group}
                 </TableCell>
+                <TableCell className="max-w-xs truncate">{agg.query}</TableCell>
                 <TableCell className="text-right">
-                  {agg.visibilityPct.toFixed(0)}%
+                  {agg.positions.join(", ")}
                 </TableCell>
                 <TableCell className="text-right">
-                  {agg.avgCitations.toFixed(1)}
-                </TableCell>
-                <TableCell className="text-right">
-                  {agg.score.toFixed(1)}
+                  {agg.score.toFixed(0)}
                 </TableCell>
               </TableRow>
             ))}
@@ -111,14 +103,9 @@ export default function RecentVisibility({
               <TableCell colSpan={2} className="font-bold">
                 Average
               </TableCell>
+              <TableCell className="text-right font-bold" />
               <TableCell className="text-right font-bold">
-                {totals.visibilityPct.toFixed(0)}%
-              </TableCell>
-              <TableCell className="text-right font-bold">
-                {totals.avgCitations.toFixed(1)}
-              </TableCell>
-              <TableCell className="text-right font-bold">
-                {totals.score.toFixed(1)}
+                {(mean(aggregates.map((a) => a.score)) || 0).toFixed(1)}
               </TableCell>
             </TableRow>
           </TableFooter>

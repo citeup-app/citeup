@@ -5,7 +5,7 @@ import { Tabs, TabsList, TabsTrigger } from "~/components/ui/Tabs";
 import { requireUser } from "~/lib/auth.server";
 import prisma from "~/lib/prisma.server";
 import type { Route } from "./+types/route";
-import RecentVisibility from "./RecentVisibility";
+import CitationsRecentRun from "./CitationsRecentRun";
 import VisibilityCharts from "./VisibilityCharts";
 
 export const handle = { siteNav: true };
@@ -71,7 +71,7 @@ export default function SiteCitationsPage({
 
       {run ? (
         <>
-          <RecentVisibility run={run} />
+          <CitationsRecentRun run={run} />
           <VisibilityCharts
             runs={runs.filter((r) => r.platform === platform)}
           />
