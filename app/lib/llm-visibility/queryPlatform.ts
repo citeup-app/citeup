@@ -2,7 +2,10 @@ import type { Temporal } from "@js-temporal/polyfill";
 import debug from "debug";
 import captureException from "~/lib/captureException.server";
 import prisma from "~/lib/prisma.server";
-import { checkUsageLimits, recordUsageEvent } from "~/lib/usage/usageLimit.server";
+import {
+  checkUsageLimits,
+  recordUsageEvent,
+} from "~/lib/usage/usageLimit.server";
 import type { QueryFn } from "./llmVisibility";
 
 const logger = debug("server");
@@ -127,7 +130,6 @@ async function singleQueryRepetition({
     const { citations, extraQueries, text, usage } = await queryFn(query);
     await recordUsageEvent({
       accountId,
-      platform,
       model: modelId,
       inputTokens: usage.inputTokens ?? 0,
       outputTokens: usage.outputTokens ?? 0,

@@ -1,26 +1,34 @@
-export type TokenCost = { inputPerM: number; outputPerM: number };
-export type RequestCost = { perRequest: number };
-export type PlatformCost = TokenCost | RequestCost;
+import { invariant } from "es-toolkit";
 
-export function isTokenCost(cost: PlatformCost): cost is TokenCost {
-  return "inputPerM" in cost;
+export type ModelPricing =
+  | { costPerInputM: number; costPerOutputM: number }
+  | { perRequest: number };
+
+export function calculateCostUsd(
+  model: string,
+  inputTokens: number,
+  outputTokens: number,
+): number {
+  const cost = MODEL_PRICING[model];
+  invariant(cost, `Unknown model: ${model}`);
+  return "perRequest" in cost
+    ? cost.perRequest
+    : (inputTokens / 1_000_000) * cost.costPerInputM +
+        (outputTokens / 1_000_000) * cost.costPerOutputM;
 }
 
 // Keyed by exact model ID string used in generateText calls.
-// Add new models here when platform clients are updated.
-export const PLATFORM_COSTS: Record<string, PlatformCost> = {
-  "claude-haiku-4-5-20251001": { inputPerM: 1.00, outputPerM: 5.00 },
-  "gpt-5-chat-latest":         { inputPerM: 1.25, outputPerM: 10.00 },
-  "gemini-2.5-flash":          { inputPerM: 0.30, outputPerM: 2.50 },
-  "sonar":                     { inputPerM: 1.00, outputPerM: 1.00 },
+// Add new models here when model pricing is updated.
+export const MODEL_PRICING: Record<string, ModelPricing> = {
+  "claude-haiku-4-5-20251001": { costPerInputM: 1.0, costPerOutputM: 5.0 },
+  "gpt-5-chat-latest": { costPerInputM: 1.25, costPerOutputM: 10.0 },
+  "gemini-2.5-flash": { costPerInputM: 0.3, costPerOutputM: 2.5 },
+  sonar: { costPerInputM: 1.0, costPerOutputM: 1.0 },
 };
 
-// Aggregate limits per account across all platforms.
+// Aggregate limits per account across all models.
 export const ACCOUNT_LIMITS = {
-  hourly:  { costUsd: 2.00,   requests: 500   },
-  daily:   { costUsd: 20.00,  requests: 5000  },
-  monthly: { costUsd: 100.00, requests: 50000 },
+  hourly: { costUsd: 2.0, requests: 500 },
+  daily: { costUsd: 5.0, requests: 1000 },
+  monthly: { costUsd: 20.0, requests: 5000 },
 } as const;
-
-export type LimitWindow = keyof typeof ACCOUNT_LIMITS;
-export type LimitType = "cost" | "requests";

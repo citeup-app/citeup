@@ -1,13 +1,23 @@
-import type { LimitType, LimitWindow } from "./costConfig";
+import type { ACCOUNT_LIMITS } from "./costConfig";
 
 export class UsageLimitExceededError extends Error {
-  constructor(
-    public readonly window: LimitWindow,
-    public readonly limitType: LimitType,
-    public readonly current: number,
-    public readonly limit: number,
-  ) {
-    super(`${window} ${limitType} limit exceeded: ${current} / ${limit}`);
+  public readonly current: number;
+  public readonly limit: number;
+  public readonly timeWindow: keyof typeof ACCOUNT_LIMITS;
+
+  constructor({
+    current,
+    limit,
+    timeWindow,
+  }: {
+    current: number;
+    limit: number;
+    timeWindow: keyof typeof ACCOUNT_LIMITS;
+  }) {
+    super(`${timeWindow} cost limit exceeded: ${current} / ${limit}`);
+    this.current = current;
+    this.limit = limit;
+    this.timeWindow = timeWindow;
     this.name = "UsageLimitExceededError";
   }
 }

@@ -1,71 +1,71 @@
-import { invariant } from "es-toolkit";
-import { Prisma } from "~/prisma";
 import prisma from "~/lib/prisma.server";
-import {
-  ACCOUNT_LIMITS,
-  PLATFORM_COSTS,
-  isTokenCost,
-  type LimitWindow,
-} from "./costConfig";
+import { Prisma } from "~/prisma";
+import { ACCOUNT_LIMITS, calculateCostUsd } from "./costConfig";
 import { UsageLimitExceededError } from "./UsageLimitExceededError";
 
-export type RecordUsageEventArgs = {
-  accountId: string;
-  platform: string;
-  model: string;
-  inputTokens: number;
-  outputTokens: number;
-};
-
+/**
+ * Record a usage event for a given account, model, and input/output tokens.
+ *
+ * @param accountId - The ID of the account to record the usage event for.
+ * @param model - The model used to generate the usage event.
+ * @param inputTokens - The number of input tokens used to generate the usage event.
+ * @param outputTokens - The number of output tokens used to generate the usage event.
+ */
 export async function recordUsageEvent({
   accountId,
-  platform,
   model,
   inputTokens,
   outputTokens,
-}: RecordUsageEventArgs): Promise<void> {
-  const cost = PLATFORM_COSTS[model];
-  invariant(cost, `Unknown model: ${model}`);
-  let costUsd = 0;
-  if (isTokenCost(cost))
-    costUsd = (inputTokens / 1_000_000) * cost.inputPerM + (outputTokens / 1_000_000) * cost.outputPerM;
-  else
-    costUsd = cost.perRequest;
-
+}: {
+  accountId: string;
+  model: string;
+  inputTokens: number;
+  outputTokens: number;
+}): Promise<void> {
+  const cost = new Prisma.Decimal(
+    calculateCostUsd(model, inputTokens, outputTokens),
+  );
   await prisma.usageEvent.create({
-    data: {
-      accountId,
-      platform,
-      model,
-      inputTokens,
-      outputTokens,
-      requests: 1,
-      costUsd: new Prisma.Decimal(costUsd),
-    },
+    data: { accountId, cost, inputTokens, model, outputTokens },
   });
 }
 
+/**
+ * Check the usage limits for a given account.
+ *
+ * @param accountId - The ID of the account to check the usage limits for.
+ * @throws {UsageLimitExceededError} - If the usage limits are exceeded.
+ */
 export async function checkUsageLimits(accountId: string): Promise<void> {
   const now = new Date();
-  const windows: { window: LimitWindow; since: Date }[] = [
-    { window: "hourly",  since: new Date(now.getTime() - 60 * 60 * 1000) },
-    { window: "daily",   since: new Date(now.getTime() - 24 * 60 * 60 * 1000) },
-    { window: "monthly", since: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) },
-  ];
+  const timeWindows = [
+    { timeWindow: "hourly", since: new Date(now.getTime() - 60 * 60 * 1000) },
+    {
+      timeWindow: "daily",
+      since: new Date(now.getTime() - 24 * 60 * 60 * 1000),
+    },
+    {
+      timeWindow: "monthly",
+      since: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
+    },
+  ] as { timeWindow: keyof typeof ACCOUNT_LIMITS; since: Date }[];
 
-  for (const { window, since } of windows) {
-    const agg = await prisma.usageEvent.aggregate({
-      where: { accountId, createdAt: { gte: since } },
-      _sum: { costUsd: true, requests: true },
-    });
+  await Promise.all(
+    timeWindows.map(async ({ timeWindow, since }) => {
+      const { _sum } = await prisma.usageEvent.aggregate({
+        where: { accountId, createdAt: { gte: since } },
+        _sum: { cost: true },
+      });
 
-    const totalCost = Number(agg._sum.costUsd ?? 0);
-    const totalRequests = Number(agg._sum.requests ?? 0);
-    const limits = ACCOUNT_LIMITS[window];
+      const totalCost = Number(_sum.cost ?? 0);
+      const limits = ACCOUNT_LIMITS[timeWindow];
 
-    if (totalCost > limits.costUsd)
-      throw new UsageLimitExceededError(window, "cost", totalCost, limits.costUsd);
-    if (totalRequests > limits.requests)
-      throw new UsageLimitExceededError(window, "requests", totalRequests, limits.requests);
-  }
+      if (totalCost > limits.costUsd)
+        throw new UsageLimitExceededError({
+          current: totalCost,
+          limit: limits.costUsd,
+          timeWindow: timeWindow,
+        });
+    }),
+  );
 }

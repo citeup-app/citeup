@@ -15,9 +15,9 @@ datasource db {
 }
 
 model Account {
-  id        String                      @id @default(cuid())
-  createdAt DateTime @map("created_at") @default(now())
-  hostname  String?  @map("hostname")
+  id          String                          @id @default(cuid())
+  createdAt   DateTime     @map("created_at") @default(now())
+  hostname    String?      @map("hostname")
   users       User[]
   sites       Site[]
   usageEvents UsageEvent[]
@@ -178,16 +178,14 @@ model SiteQuerySuggestion {
 }
 
 model UsageEvent {
-  id           String   @id @default(cuid())
-  createdAt    DateTime @default(now()) @map("created_at")
+  id           String                         @id @default(cuid())
+  createdAt    DateTime @map("created_at")    @default(now())
   accountId    String   @map("account_id")
   account      Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  platform     String   @map("platform")
   model        String   @map("model")
-  inputTokens  Int      @default(0) @map("input_tokens")
-  outputTokens Int      @default(0) @map("output_tokens")
-  requests     Int      @default(1)
-  costUsd      Decimal  @db.Decimal(10, 6) @map("cost_usd")
+  inputTokens  Int      @map("input_tokens")  @default(0)
+  outputTokens Int      @map("output_tokens") @default(0)
+  cost         Decimal  @map("cost")          @db.Decimal(10, 6)
 
   @@index([accountId, createdAt])
   @@map("usage_events")
