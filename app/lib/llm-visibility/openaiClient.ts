@@ -10,7 +10,7 @@ const MODEL_ID = "gpt-5-chat-latest";
 export default async function openaiClient(query: string): ReturnType<QueryFn> {
   invariant(envVars.OPENAI_API_KEY, "OPENAI_API_KEY is not set");
 
-  const { sources, text } = await generateText({
+  const { sources, text, usage } = await generateText({
     maxOutputTokens: 2000,
     model: openai(MODEL_ID),
     providerOptions: {
@@ -44,5 +44,5 @@ references.`,
   const citations = (sources as LanguageModelV3Source[])
     .filter((s) => s.sourceType === "url")
     .map((s) => s.url);
-  return { citations, extraQueries: [], text };
+  return { citations, extraQueries: [], text, usage };
 }

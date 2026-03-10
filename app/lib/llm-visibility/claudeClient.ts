@@ -4,7 +4,7 @@ import { haiku } from "./anthropic";
 import type { QueryFn } from "./llmVisibility";
 
 export default async function queryClaude(query: string): ReturnType<QueryFn> {
-  const { sources, text } = await generateText({
+  const { sources, text, usage } = await generateText({
     model: haiku,
     prompt: [
       {
@@ -30,5 +30,5 @@ references.`,
   const citations = sources
     .filter((source) => source.sourceType === "url")
     .map((source) => source.url);
-  return { citations, extraQueries: [], text };
+  return { citations, extraQueries: [], text, usage };
 }

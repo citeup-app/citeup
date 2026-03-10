@@ -15,7 +15,7 @@ export default async function queryPerplexity(
     apiKey: envVars.PERPLEXITY_API_KEY,
   });
 
-  const { sources, text } = await generateText({
+  const { sources, text, usage } = await generateText({
     model: perplexity(MODEL_ID),
     prompt: [
       {
@@ -38,5 +38,5 @@ with numbered references.`,
     .filter((source) => source.sourceType === "url")
     .map((source) => source.url);
 
-  return { citations, extraQueries: [], text };
+  return { citations, extraQueries: [], text, usage };
 }

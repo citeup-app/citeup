@@ -12,7 +12,7 @@ export default async function queryGemini(query: string): ReturnType<QueryFn> {
     "GOOGLE_GENERATIVE_AI_API_KEY is not set",
   );
 
-  const { providerMetadata, text } = await generateText({
+  const { providerMetadata, text, usage } = await generateText({
     model: google(MODEL_ID),
     prompt: [
       {
@@ -56,5 +56,5 @@ references.`,
     return response.url;
   });
 
-  return { citations, extraQueries, text };
+  return { citations, extraQueries, text, usage };
 }

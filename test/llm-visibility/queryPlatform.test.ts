@@ -17,6 +17,7 @@ const CITATION_SETS = [
     citations: ["https://rentail.space/listings", "https://other.com"],
     extraQueries: [],
     text: "You can find short-term retail space on rentail.space.",
+    usage: { inputTokens: 100, outputTokens: 50 },
   },
   {
     citations: [
@@ -26,11 +27,13 @@ const CITATION_SETS = [
     ],
     extraQueries: [],
     text: "Platforms like rentail.space offer temporary retail options.",
+    usage: { inputTokens: 120, outputTokens: 60 },
   },
   {
     citations: ["https://example.com", "https://unrelated.com"],
     extraQueries: [],
     text: "Shopping centers often have specialty leasing programs.",
+    usage: { inputTokens: 80, outputTokens: 40 },
   },
 ];
 

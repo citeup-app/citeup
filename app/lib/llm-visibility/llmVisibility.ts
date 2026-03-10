@@ -17,4 +17,6 @@ export type QueryFn = (query: string) => Promise<{
   extraQueries: string[];
   // The response from the LLM to the query.
   text: string;
+  // Token usage for the query.
+  usage: { inputTokens: number | undefined; outputTokens: number | undefined };
 }>;
