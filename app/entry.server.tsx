@@ -9,6 +9,7 @@ import type {
 import "~/lib/logger.server";
 import msw from "~/test/mocks/msw";
 import captureException from "./lib/captureException.server";
+import { trackRequest } from "./lib/selfTracker.server";
 
 if (import.meta.env.PROD)
   Sentry.init({
@@ -44,6 +45,7 @@ export default Sentry.wrapSentryHandleRequest(
     // biome-ignore lint/suspicious/noExplicitAny: Sentry wrapper requires flexible type
     loadContext?: any,
   ) => {
+    trackRequest(request); // fire-and-forget, production only
     const start = Date.now();
     logger("%s %s", request.method, request.url);
 
