@@ -115,19 +115,18 @@ export async function fetchPageContent(domain: string): Promise<string | null> {
  */
 export async function loadSitesWithMetrics(accountId: string): Promise<
   {
-    avgScore: number;
-    site: Site;
-    totalBotVisits: number;
+    citationsToDomain: number;
+    score: number;
     totalCitations: number;
     uniqueBots: number;
+    totalBotVisits: number;
+    site: Site;
   }[]
 > {
   const sites = await prisma.site.findMany({
     where: { accountId },
     orderBy: { domain: "asc" },
   });
-
-  // Calculate metrics for each site
   const sitesWithMetrics = await Promise.all(
     sites.map(async (site) => {
       // Get citation metrics
@@ -140,17 +139,21 @@ export async function loadSitesWithMetrics(accountId: string): Promise<
         where: { siteId: site.id, createdAt: { gte } },
       });
 
-      const allQueries = citationRuns.flatMap((run) => run.queries);
-      const citationMetrics = calculateCitationMetrics(allQueries, site.domain);
+      const { citationsToDomain, score, totalCitations } =
+        calculateCitationMetrics({
+          domain: site.domain,
+          queries: citationRuns.flatMap((run) => run.queries),
+        });
 
       // Get bot metrics
       const botMetrics = await getBotMetrics(site.id, 14);
 
       return {
+        citationsToDomain,
+        score,
         site,
-        totalCitations: citationMetrics.totalCitations,
-        avgScore: citationMetrics.avgScore,
         totalBotVisits: botMetrics.totalBotVisits,
+        totalCitations,
         uniqueBots: botMetrics.uniqueBots,
       };
     }),

@@ -6,17 +6,17 @@ import DeleteSiteDialog from "./DeleteSiteDialog";
 import type { action } from "./route";
 
 export default function SiteEntry({
+  citationsToDmain,
   fetcher,
+  score,
   site,
-  totalCitations,
-  avgScore,
   totalBotVisits,
   uniqueBots,
 }: {
+  citationsToDmain: number;
   fetcher: ReturnType<typeof useFetcher<typeof action>>;
+  score: number;
   site: Site;
-  totalCitations: number;
-  avgScore: number;
   totalBotVisits: number;
   uniqueBots: number;
 }) {
@@ -51,13 +51,13 @@ export default function SiteEntry({
         <div>
           <p className="font-light">Citations</p>
           <p className="font-bold text-3xl">
-            {totalCitations.toLocaleString()}
+            {citationsToDmain.toLocaleString()}
           </p>
         </div>
         <div>
-          <p className="font-light">Avg Score</p>
+          <p className="font-light">Score</p>
           <p className="font-bold text-3xl">
-            {avgScore.toFixed(1).toLocaleString()}
+            {score.toFixed(1).toLocaleString()}
           </p>
         </div>
         <div>

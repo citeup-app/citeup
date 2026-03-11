@@ -84,12 +84,12 @@ export default function SitesPage({ loaderData }: Route.ComponentProps) {
           <CardContent className="space-y-4 divide-y-2 divide-black/10">
             {sites.map((item) => (
               <SiteEntry
-                avgScore={item.avgScore}
+                citationsToDmain={item.totalCitations}
                 fetcher={fetcher}
                 key={item.site.id}
+                score={item.score}
                 site={item.site}
                 totalBotVisits={item.totalBotVisits}
-                totalCitations={item.totalCitations}
                 uniqueBots={item.uniqueBots}
               />
             ))}
