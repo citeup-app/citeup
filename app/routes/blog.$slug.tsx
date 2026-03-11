@@ -60,10 +60,7 @@ export default function Post({ loaderData }: { loaderData: BlogPost }) {
           alt={alt}
           minHeight={300}
           maxHeight={600}
-          src={new URL(
-            `/blog/${image}`,
-            import.meta.env.VITE_APP_URL,
-          ).toString()}
+          src={`/blog/${image}`}
         />
 
         <p className="prose prose-lg mx-auto text-gray-400 text-md italic">
