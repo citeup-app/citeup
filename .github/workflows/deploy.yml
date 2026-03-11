@@ -57,14 +57,30 @@ jobs:
           node-version-file: "package.json"
           cache: "pnpm"
 
+      - name: Cache NPM dependencies
+        id: cache-npm
+        uses: actions/cache@v5
+        with:
+          path: ./node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/pnpm-lock.yaml') }}
+
       - name: Install NPM dependencies
+        if: steps.cache-npm.outputs.cache-hit != 'true'
         run: pnpm install
 
       - name: Set PLAYWRIGHT_VERSION
         run: echo "PLAYWRIGHT_VERSION=$(pnpm exec playwright --version)" >> $GITHUB_ENV
 
+      - name: Cache Playwright
+        id: cache-playwright
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
+
       - name: Install Playwright (Chromium)
         timeout-minutes: 5
+        if: steps.cache-playwright.outputs.cache-hit != 'true'
         run: pnpm exec playwright install chromium --with-deps
 
       - name: Setup database schema for testing
@@ -104,20 +120,9 @@ jobs:
           name: playwright-test-results
           path: __screenshots__
 
-      - name: Install Doppler CLI
-        uses: dopplerhq/cli-action@v3
-
-      - name: Read POSTGRES_PRISMA_URL from Doppler
-        id: doppler-postgres-prisma-url
-        run: echo "POSTGRES_PRISMA_URL=$(doppler --config prd secrets get POSTGRES_PRISMA_URL --plain)" >> $GITHUB_ENV
-        env:
-          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
-
       - name: Update database
         if: github.ref == 'refs/heads/main'
-        run: pnpm prisma db push --url "${{ env.POSTGRES_PRISMA_URL }}"
-        env:
-          POSTGRES_PRISMA_URL: "${{ env.POSTGRES_PRISMA_URL }}"
+        run: vercel env run -- pnpm prisma db push
 
       - name: Deploy to Vercel
         uses: nexterias/actions-vercel@v1
