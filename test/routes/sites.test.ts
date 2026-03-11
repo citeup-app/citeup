@@ -208,9 +208,7 @@ describe("sites route", () => {
       await expect(
         container.getByText("Citations", { exact: true }),
       ).toBeVisible();
-      await expect(
-        container.getByText("Avg Score", { exact: true }),
-      ).toBeVisible();
+      await expect(container.getByText("Score", { exact: true })).toBeVisible();
       await expect(
         container.getByText("Bot Visits", { exact: true }),
       ).toBeVisible();
