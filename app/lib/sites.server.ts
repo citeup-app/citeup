@@ -1,12 +1,11 @@
 import { Temporal } from "@js-temporal/polyfill";
 import { ms } from "convert";
-import { invariant } from "es-toolkit";
+import { invariant, sumBy, uniqBy } from "es-toolkit";
 import dns from "node:dns";
 import parseHTMLTree, { getBodyContent } from "~/lib/html/parseHTML";
 import type { Account, Site } from "~/prisma";
 import captureException from "./captureException.server";
 import calculateCitationMetrics from "./llm-visibility/calculateCitationMetrics";
-import { getBotMetrics } from "./llm-visibility/getBotMetrics.server";
 import prisma from "./prisma.server";
 
 /**
@@ -123,43 +122,44 @@ export async function loadSitesWithMetrics(accountId: string): Promise<
     site: Site;
   }[]
 > {
+  const gte = new Date(
+    Temporal.Now.plainDateISO().subtract({ days: 14 }).toJSON(),
+  );
   const sites = await prisma.site.findMany({
+    include: {
+      citationRuns: {
+        include: {
+          queries: {
+            select: { citations: true },
+          },
+        },
+        where: { createdAt: { gte } },
+      },
+      botVisits: {
+        select: { count: true, botType: true },
+        where: { date: { gte } },
+      },
+    },
+    orderBy: [{ domain: "asc" }, { createdAt: "desc" }],
     where: { accountId },
-    orderBy: { domain: "asc" },
   });
-  const sitesWithMetrics = await Promise.all(
-    sites.map(async (site) => {
-      // Get citation metrics
-      const gte = new Date(
-        Temporal.Now.plainDateISO().subtract({ days: 14 }).toJSON(),
-      );
-
-      const citationRuns = await prisma.citationQueryRun.findMany({
-        include: { queries: true },
-        where: { siteId: site.id, createdAt: { gte } },
+  return sites.map((site) => {
+    // Get citation metrics
+    const { citationsToDomain, score, totalCitations } =
+      calculateCitationMetrics({
+        domain: site.domain,
+        queries: site.citationRuns[0]?.queries ?? [],
       });
 
-      const { citationsToDomain, score, totalCitations } =
-        calculateCitationMetrics({
-          domain: site.domain,
-          queries: citationRuns.flatMap((run) => run.queries),
-        });
-
-      // Get bot metrics
-      const botMetrics = await getBotMetrics(site.id, 14);
-
-      return {
-        citationsToDomain,
-        score,
-        site,
-        totalBotVisits: botMetrics.totalBotVisits,
-        totalCitations,
-        uniqueBots: botMetrics.uniqueBots,
-      };
-    }),
-  );
-
-  return sitesWithMetrics;
+    return {
+      citationsToDomain,
+      score,
+      site,
+      totalBotVisits: sumBy(site.botVisits, (v) => v.count),
+      totalCitations,
+      uniqueBots: uniqBy(site.botVisits, (v) => v.botType).length,
+    };
+  });
 }
 
 /**
