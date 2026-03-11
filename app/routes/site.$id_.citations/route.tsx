@@ -71,7 +71,7 @@ export default function SiteCitationsPage({
 
       {run ? (
         <>
-          <CitationsRecentRun run={run} />
+          <CitationsRecentRun run={run} site={site} />
           <VisibilityCharts
             runs={runs.filter((r) => r.platform === platform)}
           />

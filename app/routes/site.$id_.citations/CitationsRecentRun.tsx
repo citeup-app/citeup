@@ -1,4 +1,6 @@
 import { groupBy, mean } from "es-toolkit";
+import { ArrowRightIcon } from "lucide-react";
+import { Link } from "react-router";
 import { twMerge } from "tailwind-merge";
 import {
   Card,
@@ -16,41 +18,28 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/Table";
-import type { CitationQuery, Prisma } from "~/prisma";
-
-function computeMetrics(reps: CitationQuery[]): {
-  visibilityPct: number;
-  avgCitations: number;
-  score: number;
-} {
-  if (reps.length === 0) return { visibilityPct: 0, avgCitations: 0, score: 0 };
-
-  const visibilityPct = mean(reps.map((q) => (q.position !== null ? 100 : 0)));
-  const avgCitations = mean(reps.map((q) => q.citations.length));
-  const score = mean(
-    reps.map((q) => {
-      if (q.position === null) return 0;
-      if (q.position === 0) return 50;
-      return Math.max(0, 10 * (q.citations.length - q.position));
-    }),
-  );
-
-  return { visibilityPct, avgCitations, score };
-}
+import type { Prisma } from "~/prisma";
 
 export default function RecentVisibility({
   run,
+  site,
 }: {
   run: Prisma.CitationQueryRunGetPayload<{ include: { queries: true } }>;
+  site: { id: string; domain: string };
 }) {
   const grouped = groupBy(run.queries, (q) => q.query);
 
-  const aggregates = Object.entries(grouped).map(([query, reps]) => ({
+  const aggregates = Object.entries(grouped).map(([query, repeats]) => ({
+    id: repeats[0].id,
     query,
-    group: reps[0].group,
-    positions: reps.map((q) => (q.position ? +q.position + 1 : null)),
+    group: repeats[0].group,
+    citations: repeats.flatMap((q) => q.citations),
+    positions: repeats.flatMap((q) => (q.position ? q.position + 1 : null)),
+    text: repeats[0].text,
     score: mean(
-      reps.map((q) => (q.position === null ? 0 : q.position === 0 ? 50 : 10)),
+      repeats.map((q) =>
+        q.position === null ? 0 : q.position === 0 ? 50 : 10,
+      ),
     ),
   }));
 
@@ -74,6 +63,7 @@ export default function RecentVisibility({
               <TableHead className="text-right font-bold text-foreground">
                 Score
               </TableHead>
+              <TableHead />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -94,6 +84,11 @@ export default function RecentVisibility({
                 </TableCell>
                 <TableCell className="text-right">
                   {agg.score.toFixed(0)}
+                </TableCell>
+                <TableCell>
+                  <Link to={`/site/${site.id}/citation/${agg.id}`}>
+                    <ArrowRightIcon className="size-4" />
+                  </Link>
                 </TableCell>
               </TableRow>
             ))}
