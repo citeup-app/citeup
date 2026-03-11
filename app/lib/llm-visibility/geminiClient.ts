@@ -22,6 +22,7 @@ export default async function queryGemini({
 
   const { providerMetadata, text, usage } = await generateText({
     model: google(MODEL_ID),
+
     prompt: [
       {
         role: "system",
@@ -29,18 +30,19 @@ export default async function queryGemini({
 You are Gemini with web search capabilities. When answering questions, search
 the web for current information and cite your sources using numbered citations
 like [1], [2], etc. Always include a 'Sources:' section at the end with numbered
-references.`,
+references, with a link to each source URL.`,
       },
       {
         role: "user",
         content: [{ text: query, type: "text" }],
       },
     ],
-    maxOutputTokens: 2000,
     tools: {
       web_search: google.tools.googleSearch({}),
     },
     toolChoice: { type: "tool", toolName: "web_search" },
+
+    maxOutputTokens: 5000,
     maxRetries,
     timeout,
   });
@@ -48,22 +50,15 @@ references.`,
   const metadata = providerMetadata?.google.groundingMetadata as {
     webSearchQueries?: string[];
     groundingChunks?: { web: { uri: string; title: string } }[];
-    groundingSupports?: {
-      segment: {
-        startIndex?: number;
-        endIndex: number;
-        text: string;
-      };
-      groundingChunkIndices: number[];
-    }[];
   };
 
   const extraQueries = metadata?.webSearchQueries ?? [];
   const urls = metadata?.groundingChunks?.map((chunk) => chunk.web.uri);
-  const citations = await mapAsync(urls ?? [], async (url) => {
+  const urlSources = await mapAsync(urls ?? [], async (url) => {
     const response = await fetch(url, { redirect: "follow" });
     return response.url;
   });
+  const citations = [...new Set(urlSources.filter((url) => url !== null))];
 
   return { citations, extraQueries, text, usage };
 }

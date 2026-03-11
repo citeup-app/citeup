@@ -1,5 +1,4 @@
 import { openai } from "@ai-sdk/openai";
-import type { LanguageModelV3Source } from "@ai-sdk/provider";
 import { generateText } from "ai";
 import { invariant } from "es-toolkit";
 import envVars from "~/lib/envVars";
@@ -19,13 +18,13 @@ export default async function openaiClient({
   invariant(envVars.OPENAI_API_KEY, "OPENAI_API_KEY is not set");
 
   const { sources, text, usage } = await generateText({
-    maxOutputTokens: 2000,
     model: openai(MODEL_ID),
     providerOptions: {
       openai: {
         apiKey: envVars.OPENAI_API_KEY,
       },
     },
+
     prompt: [
       {
         role: "system",
@@ -33,7 +32,7 @@ export default async function openaiClient({
 You are ChatGPT with web search capabilities. When answering questions, search
 the web for current information and cite your sources using numbered citations
 like [1], [2], etc. Always include a 'Sources:' section at the end with numbered
-references.`,
+references, with a link to each source URL.`,
       },
       {
         role: "user",
@@ -47,11 +46,15 @@ references.`,
       }),
     },
     toolChoice: { type: "tool", toolName: "web_search" },
+
+    maxOutputTokens: 5000,
     maxRetries,
     timeout,
   });
-  const citations = (sources as LanguageModelV3Source[])
-    .filter((s) => s.sourceType === "url")
-    .map((s) => s.url);
+  const urlSources = sources.filter(
+    (source) =>
+      source.type === "source" && source.sourceType === "url" && source.url,
+  ) as { url: string }[];
+  const citations = [...new Set(urlSources.map(({ url }) => url))];
   return { citations, extraQueries: [], text, usage };
 }

@@ -14,6 +14,7 @@ export default async function queryClaude({
 }): ReturnType<QueryFn> {
   const { sources, text, usage } = await generateText({
     model: haiku,
+
     prompt: [
       {
         role: "system",
@@ -21,23 +22,30 @@ export default async function queryClaude({
 You are Claude with web search capabilities. When answering questions, search
 the web for current information and cite your sources using numbered citations
 like [1], [2], etc. Always include a 'Sources:' section at the end with numbered
-references.`,
+references, with a link to each source URL.`,
       },
       {
         role: "user",
         content: [{ text: query, type: "text" }],
       },
     ],
-    maxOutputTokens: 2000,
     tools: {
       web_search: anthropic.tools.webSearch_20250305({}),
     },
     toolChoice: { type: "tool", toolName: "web_search" },
+
+    maxOutputTokens: 5000,
     maxRetries,
     timeout,
   });
-  const citations = sources
-    .filter((source) => source.sourceType === "url")
-    .map((source) => source.url);
+  const urlSources = sources.filter(
+    (source) =>
+      source.type === "source" &&
+      source.sourceType === "url" &&
+      source.providerMetadata?.anthropic?.citedText &&
+      source.url,
+  ) as { url: string }[];
+  const citations = [...new Set(urlSources.map(({ url }) => url))];
+
   return { citations, extraQueries: [], text, usage };
 }

@@ -24,8 +24,8 @@ describe("openaiClient", () => {
   it("returns citations from URL sources and the response text", async () => {
     vi.mocked(generateText).mockResolvedValue({
       sources: [
-        { sourceType: "url", url: "https://example.com" },
-        { sourceType: "url", url: "https://other.com" },
+        { type: "source", sourceType: "url", url: "https://example.com" },
+        { type: "source", sourceType: "url", url: "https://other.com" },
       ],
       text: "Paris is the capital of France.",
     } as never);
@@ -47,7 +47,7 @@ describe("openaiClient", () => {
   it("filters out non-URL sources", async () => {
     vi.mocked(generateText).mockResolvedValue({
       sources: [
-        { sourceType: "url", url: "https://example.com" },
+        { type: "source", sourceType: "url", url: "https://example.com" },
         { sourceType: "document", id: "doc-1" },
       ],
       text: "Response",

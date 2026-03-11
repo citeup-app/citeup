@@ -23,6 +23,7 @@ export default async function queryPerplexity({
 
   const { sources, text, usage } = await generateText({
     model: perplexity(MODEL_ID),
+
     prompt: [
       {
         role: "system",
@@ -37,13 +38,15 @@ with numbered references.`,
         content: [{ text: query, type: "text" }],
       },
     ],
-    maxOutputTokens: 2000,
+
+    maxOutputTokens: 5000,
     maxRetries,
     timeout,
   });
-  const citations = sources
-    .filter((source) => source.sourceType === "url")
-    .map((source) => source.url);
-
+  const souceURLs = sources.filter(
+    (source) =>
+      source.type === "source" && source.sourceType === "url" && source.url,
+  ) as { url: string }[];
+  const citations = [...new Set(souceURLs.map(({ url }) => url))];
   return { citations, extraQueries: [], text, usage };
 }

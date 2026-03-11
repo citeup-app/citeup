@@ -9,9 +9,7 @@ vi.mock("~/lib/envVars", () => ({
 vi.mock("@ai-sdk/google", () => {
   const google = Object.assign(
     vi.fn(() => "mock-model"),
-    {
-      tools: { googleSearch: vi.fn(() => "mock-google-search") },
-    },
+    { tools: { googleSearch: vi.fn(() => "mock-google-search") } },
   );
   return { google };
 });
