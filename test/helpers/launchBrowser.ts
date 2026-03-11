@@ -63,7 +63,7 @@ export async function newContext(): Promise<BrowserContext> {
   context.route("**", blockOutgoingRequests);
   context
     .on("console", (msg) => trimConsole(msg.text()))
-    .on("weberror", (error) => logger("error: %s", error.error));
+    .on("weberror", (error) => logger("error: %s", error.error()));
 
   // Set navigation timeout to 5s less than hook timeout for better error messages
   context.setDefaultNavigationTimeout(ms("10s"));

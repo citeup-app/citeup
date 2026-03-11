@@ -1,4 +1,4 @@
-import { invariant } from "node_modules/es-toolkit/dist/util/invariant.mjs";
+import { invariant } from "es-toolkit";
 import { useState } from "react";
 import { redirect, useFetcher } from "react-router";
 import { Button } from "~/components/ui/Button";
@@ -62,6 +62,9 @@ export async function action({ request }: Route.ActionArgs) {
       await deleteSite({ accountId: user.accountId, siteId });
       return { ok: true };
     }
+
+    default:
+      throw new Response("Method not allowed", { status: 405 });
   }
 }
 

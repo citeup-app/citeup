@@ -10,6 +10,14 @@ import { rm } from "node:fs/promises";
 import { resolve } from "node:path";
 import * as vite from "vite";
 
+// chokidar v4 dropped FSEvents and falls back to Node.js's fs.watch, which
+// consumes one file descriptor per watched file. macOS defaults to 10240 open
+// fds — easily exhausted when Vite's dep optimizer watches node_modules.
+// Polling uses setInterval + fs.stat instead of fs.watch, so no fd pressure.
+// Must be set before any Vite/chokidar code runs.
+process.env.CHOKIDAR_USEPOLLING = "1";
+process.env.CHOKIDAR_INTERVAL = "86400000"; // 24 h — effectively never in tests
+
 // Import and start the server
 async function startServer() {
   // Initialize MSW for mocking HTTP requests during tests
@@ -26,49 +34,58 @@ async function startServer() {
   const port = Number(process.env.PORT);
   invariant(port, "PORT is not defined");
   try {
-    // Remove the directory at "deps" before starting the dev server
-    await rm(resolve("node_modules/.vite/deps"), {
-      recursive: true,
-      force: true,
-    });
+    // Use a test-specific cache directory so tests don't interfere with the
+    // dev server cache (node_modules/.vite). Clear it on each run to ensure
+    // a clean start — Vite will re-optimize all listed deps from scratch.
+    const testCacheDir = resolve("node_modules/.vite-test");
+    await rm(testCacheDir, { recursive: true, force: true });
 
     const devServer = await vite.createServer({
       build: {
-        // Test-specific build options
         minify: false,
         sourcemap: true,
       },
+      cacheDir: testCacheDir,
       clearScreen: false,
-      logLevel: "warn", // Reduced log level to avoid noise
+      logLevel: "warn",
       root: process.cwd(),
       optimizeDeps: {
-        // List all hook-using packages here so Vite pre-bundles them in the
-        // first pass and never does mid-session re-optimization. With HMR
-        // disabled, a mid-session re-optimization assigns new chunk hashes but
-        // cannot signal the browser to reload already-loaded chunks, resulting
-        // in two React instances: the old one (held by react-dom) and the new
-        // one (held by the newly discovered dep). This causes
-        // ReactCurrentDispatcher.current to be null when the new dep tries to
-        // call a hook.
-        force: true,
+        // entries covers all route files so Vite crawls and discovers every
+        // transitive CJS dep (e.g. use-sync-external-store/shim) before the
+        // browser makes its first request. Combined with Vite's default
+        // holdUntilCrawlEnd:true, the browser waits for the single full
+        // optimization pass to finish — no mid-session re-optimization, no
+        // two-React-instances "Invalid hook call" errors, no need for
+        // noDiscovery:true or manually listing every transitive CJS dep.
+        //
+        // Do NOT use force: true — it triggers eager node_modules scanning on
+        // startup, hits macOS's open-file limit (EMFILE), and crashes before
+        // any test runs. The cache delete above already ensures a clean start.
+        entries: ["app/root.tsx", "app/routes/**/*.tsx", "app/routes/**/*.ts"],
         include: [
           "react",
-          "react-dom",
+          "react/jsx-runtime",
+          "react/jsx-dev-runtime",
+          // Must be react-dom/client, not react-dom — the app imports the
+          // /client sub-path. Listing react-dom would leave react-dom/client
+          // undiscovered and trigger a second optimization pass.
+          "react-dom/client",
           "react-router",
           "recharts",
           "usehooks-ts",
           "lucide-react",
           "@base-ui/react",
+          "@tanstack/react-query",
+          "@sentry/react-router",
         ],
       },
       server: {
-        fs: { allow: ["."] }, // Don't re-optimize already bundled deps
+        fs: { allow: ["."] },
         hmr: false,
         middlewareMode: false,
         port,
         strictPort: true,
-        warmup: { clientFiles: ["/"] }, // Pre-warm these routes during dev server startup
-        watch: null, // Don't watch files during tests
+        watch: null,
       },
     });
 
@@ -85,7 +102,9 @@ async function startServer() {
       }
     });
 
-    // Send ready signal immediately - first test navigation will trigger optimization
+    // Signal ready immediately. Vite's holdUntilCrawlEnd (default: true) will
+    // hold the first browser request until dep optimization completes, so tests
+    // won't receive partially-optimized bundles even though we don't await here.
     process.send({ type: "ready" });
   } catch (error) {
     process.send({
