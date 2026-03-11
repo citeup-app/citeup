@@ -204,8 +204,8 @@ export default function Index({ loaderData }: Route.ComponentProps) {
             <CoffeeIcon className="size-6" />
           </span>
           <span>
-            Be patient, nothing will happen for a few seconds. We're going to
-            check these queries against the domain, asking Claude, OpenAI,
+            Be patient, nothing will happen for a couple of minutes. We're going
+            to check these queries against the domain, asking Claude, OpenAI,
             Google, and Perplexity to see if they return any citations. Keep
             this page open to see the progress.
           </span>
@@ -223,9 +223,7 @@ function GradualProgress({ totalTime = 120_000 }: { totalTime?: number }) {
   useInterval(() => {
     setProgress((progress) => (progress >= 100 ? 100 : progress + increment));
   }, 100);
+  if (import.meta.env.MODE === "test") return null;
 
-  return (
-    import.meta.env.PROD ||
-    (import.meta.env.DEV && <ProgressIndicator value={progress} />)
-  );
+  return <ProgressIndicator value={progress} />;
 }
