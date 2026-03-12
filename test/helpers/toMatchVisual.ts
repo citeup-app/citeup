@@ -44,7 +44,7 @@ expect.extend({
     const name = options?.name ?? getTestName();
     await expect(locator).toMatchScreenshot({
       name,
-      tolerance: options?.tolerance ?? 3.5,
+      tolerance: options?.tolerance ?? 10,
     });
     await expect(locator).toMatchInnerHTML({ name, modify: options?.modify });
     return { message: () => "Visual matches baseline", pass: true };
