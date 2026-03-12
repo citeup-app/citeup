@@ -56,11 +56,13 @@ expect.extend({
 
     const name = options?.name || getTestName();
     const filename = path.resolve(dirname, `${name}.png`);
+    const chartLocators = await locator.locator('[data-slot="chart"]').all();
     const screenshot = await locator.screenshot({
       animations: "disabled",
       caret: "hide",
       scale: "css",
       type: "png",
+      mask: chartLocators,
     });
 
     try {
