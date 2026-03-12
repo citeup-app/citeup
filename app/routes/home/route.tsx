@@ -44,7 +44,7 @@ export default function HomePage({
   const { user, posts } = loaderData;
 
   return (
-    <Main className="bg-[hsl(60,100%,99%)]">
+    <Main className="w-full bg-[hsl(60,100%,99%)]">
       <LandingNav isSignedIn={!!user} />
       <HeroSection isSignedIn={!!user} />
       <HowItWorksSection />

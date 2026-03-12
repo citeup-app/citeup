@@ -98,7 +98,7 @@ function DropdownMenu({
           {sites.map((site) => (
             <li key={site.id}>
               <AccountMenuItem
-                className="text-black/80 pl-8"
+                className="max-w-44 truncate pl-8 text-black/80"
                 to={`/site/${site.id}`}
                 icon={<CornerDownRightIcon className="mr-2 size-4" />}
                 label={site.domain}
