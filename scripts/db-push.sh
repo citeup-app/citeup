@@ -2,7 +2,9 @@
 
 set -euo pipefail
 
-export POSTGRES_PRISMA_URL=$(doppler --config prd secrets get POSTGRES_PRISMA_URL --plain)
+# Fetch environment variables from Vercel and load them into the environment
+vercel env pull --environment production > /dev/null
+source .env.vercel
 
 echo "Updating production database..."
 pnpm prisma db push

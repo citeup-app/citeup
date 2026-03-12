@@ -10,7 +10,7 @@ env:
   VERCEL_TEAM: "team_bjyg9pgn8TQQVP2NLMPnSYSN"
   BOT_TRACKER_API_KEY: "bot-tracker-api-key"
   BOT_TRACKER_URL: "http://localhost:9222/api/track"
-  POSTGRES_PRISMA_URL: "postgresql://postgres:postgres@localhost:5432/citeup"
+  POSTGRES_URL: "postgresql://postgres:postgres@localhost:5432/citeup"
   DEBUG: ""
   GOOGLE_GENERATIVE_AI_API_KEY: "AIza"
   NODE_OPTIONS: "--max-old-space-size=3096"

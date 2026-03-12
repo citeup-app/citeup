@@ -10,7 +10,7 @@ export default defineConfig({
   datasource: {
     // Use process.env directly so prisma generate doesn't throw when the var
     // is absent (e.g. on a build server that has no DB access).
-    url: process.env.POSTGRES_PRISMA_URL,
+    url: env("POSTGRES_URL"),
   },
   migrations: {
     path: "prisma/migrations",
