@@ -124,9 +124,8 @@ jobs:
 
       - name: Vercel Link
         run: |
-          pnpm install vercel@latest
-          vercel link --yes --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ env.VERCEL_TEAM }} --project ${{ env.VERCEL_PROJECT }}
-          vercel env pull --environment production
+          pnpm dlx vercel link --yes --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ env.VERCEL_TEAM }} --project ${{ env.VERCEL_PROJECT }}
+          pnpm dlx vercel env pull --environment production
         env:
           VERCEL_TEAM: ${{ env.VERCEL_TEAM }}
           VERCEL_PROJECT: ${{ env.VERCEL_PROJECT }}
