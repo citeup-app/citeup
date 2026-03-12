@@ -284,6 +284,98 @@ describe("sites route", () => {
       await prisma.site.deleteMany();
     });
   });
+
+  describe("with two citation runs", () => {
+    const siteId = "site-delta-test";
+
+    beforeAll(async () => {
+      await prisma.site.create({
+        data: {
+          id: siteId,
+          domain: "delta-test.com",
+          accountId: user.accountId,
+        },
+      });
+      // Previous run: 10 citations to domain
+      await prisma.citationQueryRun.create({
+        data: {
+          siteId,
+          platform: "chatgpt",
+          model: "gpt-4o",
+          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+          queries: {
+            createMany: {
+              data: [
+                {
+                  query: "test query",
+                  citations: [
+                    "https://delta-test.com/a", "https://delta-test.com/b",
+                    "https://delta-test.com/c", "https://delta-test.com/d",
+                    "https://delta-test.com/e", "https://delta-test.com/f",
+                    "https://delta-test.com/g", "https://delta-test.com/h",
+                    "https://delta-test.com/i", "https://delta-test.com/j",
+                  ],
+                  text: "response",
+                  group: "group",
+                  position: 0,
+                  extraQueries: [],
+                },
+              ],
+            },
+          },
+        },
+      });
+      // Current run: 20 citations to domain
+      await prisma.citationQueryRun.create({
+        data: {
+          siteId,
+          platform: "chatgpt",
+          model: "gpt-4o",
+          createdAt: new Date(),
+          queries: {
+            createMany: {
+              data: [
+                {
+                  query: "test query",
+                  citations: [
+                    "https://delta-test.com/a", "https://delta-test.com/b",
+                    "https://delta-test.com/c", "https://delta-test.com/d",
+                    "https://delta-test.com/e", "https://delta-test.com/f",
+                    "https://delta-test.com/g", "https://delta-test.com/h",
+                    "https://delta-test.com/i", "https://delta-test.com/j",
+                    "https://delta-test.com/k", "https://delta-test.com/l",
+                    "https://delta-test.com/m", "https://delta-test.com/n",
+                    "https://delta-test.com/o", "https://delta-test.com/p",
+                    "https://delta-test.com/q", "https://delta-test.com/r",
+                    "https://delta-test.com/s", "https://delta-test.com/t",
+                  ],
+                  text: "response",
+                  group: "group",
+                  position: 0,
+                  extraQueries: [],
+                },
+              ],
+            },
+          },
+        },
+      });
+      page = await goto("/sites");
+    });
+
+    it("shows +100% delta for citations", async () => {
+      const siteRow = page.locator("div").filter({ hasText: "delta-test.com" }).first();
+      await expect(siteRow.getByText("+100%")).toBeVisible();
+    });
+
+    it("shows previous citation count", async () => {
+      const siteRow = page.locator("div").filter({ hasText: "delta-test.com" }).first();
+      await expect(siteRow.getByText("10")).toBeVisible();
+    });
+
+    afterAll(async () => {
+      await prisma.site.delete({ where: { id: siteId } });
+    });
+  });
 });
 
 function fixBaseline(html: HTMLNode[]) {
