@@ -1,6 +1,6 @@
 import { Temporal } from "@js-temporal/polyfill";
 import { ms } from "convert";
-import { invariant, sumBy, uniqBy } from "es-toolkit";
+import { groupBy, invariant, sortBy, sumBy, uniqBy } from "es-toolkit";
 import dns from "node:dns";
 import parseHTMLTree, { getBodyContent } from "~/lib/html/parseHTML";
 import type { Account, Site } from "~/prisma";
@@ -133,13 +133,14 @@ export async function loadSitesWithMetrics(accountId: string): Promise<
   const sites = await prisma.site.findMany({
     include: {
       citationRuns: {
-        include: {
+        select: {
+          createdAt: true,
           queries: {
             select: { citations: true },
           },
         },
         orderBy: { createdAt: "desc" },
-        take: 2,
+        where: { createdAt: { gte } },
       },
       botVisits: {
         select: { count: true, botType: true },
@@ -149,15 +150,35 @@ export async function loadSitesWithMetrics(accountId: string): Promise<
     orderBy: [{ domain: "asc" }, { createdAt: "desc" }],
     where: { accountId },
   });
+
   return sites.map((site) => {
+    // Group all runs by date, so each date has all the platform runs for that date:
+    // { "2026-03-12": runs, "2026-03-11": runs, ... }
+    const byDate = groupBy(site.citationRuns, ({ createdAt }) =>
+      createdAt.toISOString().slice(0, 10),
+    );
+
+    // Sort the dates in reverse chronological order, most recent is first:
+    // [{ date: "2026-03-12", citations }, { date: "2026-03-11", citations }, ...]
+    const chronological = sortBy(Object.entries(byDate), [([date]) => date])
+      .reverse()
+      .flatMap(([date, runs]) => ({
+        date,
+        citations: runs.flatMap(({ queries }) =>
+          queries.flatMap(({ citations }) => citations),
+        ),
+      }));
+
+    // Choose all citations from the most recent run
     const current = calculateCitationMetrics({
       domain: site.domain,
-      queries: site.citationRuns[0]?.queries ?? [],
+      citations: chronological[0]?.citations ?? [],
     });
+    // Choose all citations from the second most recent run
     const previous = site.citationRuns[1]
       ? calculateCitationMetrics({
           domain: site.domain,
-          queries: site.citationRuns[1].queries,
+          citations: chronological[1]?.citations ?? [],
         })
       : null;
 
