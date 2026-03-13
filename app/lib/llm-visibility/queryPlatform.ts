@@ -23,7 +23,7 @@ const logger = debug("server");
  * @param site - The site to query.
  */
 export default async function queryPlatform({
-  accountId,
+  siteId,
   modelId,
   newerThan,
   platform,
@@ -31,7 +31,7 @@ export default async function queryPlatform({
   queryFn,
   site,
 }: {
-  accountId: string;
+  siteId: string;
   modelId: string;
   newerThan: Temporal.PlainDateTime;
   platform: string;
@@ -66,7 +66,7 @@ export default async function queryPlatform({
     for (let qi = 0; qi < queries.length; qi++) {
       const query = queries[qi];
       await singleQueryRepetition({
-        accountId,
+        siteId,
         group: query.group,
         modelId,
         platform,
@@ -84,7 +84,7 @@ export default async function queryPlatform({
 }
 
 async function singleQueryRepetition({
-  accountId,
+  siteId,
   group,
   modelId,
   platform,
@@ -93,7 +93,7 @@ async function singleQueryRepetition({
   runId,
   site,
 }: {
-  accountId: string;
+  siteId: string;
   group: string;
   modelId: string;
   platform: string;
@@ -117,14 +117,14 @@ async function singleQueryRepetition({
   }
 
   try {
-    await checkUsageLimits(accountId);
+    await checkUsageLimits(siteId);
     const { citations, extraQueries, text, usage } = await queryFn({
       maxRetries: 0,
       timeout: ms("10s"),
       query,
     });
     await recordUsageEvent({
-      accountId,
+      siteId,
       model: modelId,
       inputTokens: usage.inputTokens ?? 0,
       outputTokens: usage.outputTokens ?? 0,
