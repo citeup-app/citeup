@@ -24,7 +24,12 @@ export async function loader({ request }: Route.LoaderArgs) {
   const user = await getCurrentUser(request);
   const sites = user
     ? await prisma.site.findMany({
-        where: { accountId: user.accountId },
+        where: {
+          OR: [
+            { ownerId: user.id },
+            { siteUsers: { some: { userId: user.id } } },
+          ],
+        },
         select: { id: true, domain: true },
         orderBy: { createdAt: "desc" },
       })

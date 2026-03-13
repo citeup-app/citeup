@@ -24,7 +24,13 @@ export function meta({ loaderData }: Route.MetaArgs) {
 export async function loader({ request, params }: Route.LoaderArgs) {
   const user = await requireUser(request);
   const site = await prisma.site.findFirst({
-    where: { id: params.id, accountId: user.accountId },
+    where: {
+      id: params.id,
+      OR: [
+        { ownerId: user.id },
+        { siteUsers: { some: { userId: user.id } } },
+      ],
+    },
   });
   if (!site) throw new Response("Not found", { status: 404 });
 

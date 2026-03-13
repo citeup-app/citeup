@@ -34,7 +34,13 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   });
   if (suggestions.length === 0) throw redirect(`/site/${params.id}/queries`);
   const site = await prisma.site.findFirst({
-    where: { id: params.id, accountId: user.accountId },
+    where: {
+      id: params.id,
+      OR: [
+        { ownerId: user.id },
+        { siteUsers: { some: { userId: user.id } } },
+      ],
+    },
   });
   return { siteId: params.id, site, suggestions };
 }
@@ -43,7 +49,13 @@ export async function action({ params, request }: Route.ActionArgs) {
   try {
     const user = await requireUser(request);
     const site = await prisma.site.findFirst({
-      where: { id: params.id, accountId: user.accountId },
+      where: {
+        id: params.id,
+        OR: [
+          { ownerId: user.id },
+          { siteUsers: { some: { userId: user.id } } },
+        ],
+      },
     });
     if (!site) return { error: "Site not found" };
 
@@ -52,7 +64,7 @@ export async function action({ params, request }: Route.ActionArgs) {
         const formData = await request.formData();
         const content = formData.get("content")?.toString() ?? "";
         const site = await prisma.site.update({
-          where: { id: params.id, accountId: user.accountId },
+          where: { id: params.id },
           data: { content },
         });
         await generateSiteQueries(site);
