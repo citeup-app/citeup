@@ -3,8 +3,9 @@ import { ms } from "convert";
 import debug from "debug";
 import { delay, groupBy, sortBy, sumBy, uniqBy } from "es-toolkit";
 import dns from "node:dns";
+import { generateApiKey } from "random-password-toolkit";
 import parseHTMLTree, { getBodyContent } from "~/lib/html/parseHTML";
-import type { Account, Site } from "~/prisma";
+import type { Site } from "~/prisma";
 import captureException from "./captureException.server";
 import envVars from "./envVars";
 import calculateCitationMetrics from "./llm-visibility/calculateCitationMetrics";
@@ -12,18 +13,8 @@ import prisma from "./prisma.server";
 
 const logger = debug("fetch");
 
-/**
- * Add a site to an account. If the domain is not valid, or DNS does not
- * resolve, throws an error. If the domain already exists, returns the existing
- * site without adding it again.
- *
- * @param account - The account to add the site to.
- * @param url - The URL of the site to add.
- * @throws {Error} If the domain is not valid or DNS does not resolve.
- * @returns The site that was added or already exists in the database.
- */
-export async function addSiteToAccount(
-  account: Account,
+export async function addSiteToUser(
+  user: { id: string },
   url: string,
 ): Promise<{
   site: Site;
@@ -33,14 +24,15 @@ export async function addSiteToAccount(
   if (!domain) throw new Error("Enter a valid website URL or domain name");
 
   const existing = await prisma.site.findFirst({
-    where: { accountId: account.id, domain },
+    where: { ownerId: user.id, domain },
   });
   if (existing) return { site: existing, existing: true };
 
   const content = await fetchSiteContent({ domain, maxWords: 5_000 });
   const site = await prisma.site.create({
     data: {
-      account: { connect: { id: account.id } },
+      owner: { connect: { id: user.id } },
+      apiKey: `cite.me.in_${generateApiKey(16)}`,
       content,
       domain,
     },
@@ -281,14 +273,7 @@ async function pollCrawl(crawlId: string): Promise<
   throw new Error(`Failed to crawl: ${crawlId}`);
 }
 
-/**
- * Load sites with metrics for a given account. The metrics are calculated for
- * the last 14 days.
- *
- * @param accountId - The account ID to load sites for.
- * @returns An array of sites with metrics.
- */
-export async function loadSitesWithMetrics(accountId: string): Promise<
+export async function loadSitesWithMetrics(userId: string): Promise<
   {
     citationsToDomain: number;
     previousCitationsToDomain: number | null;
@@ -298,6 +283,7 @@ export async function loadSitesWithMetrics(accountId: string): Promise<
     totalBotVisits: number;
     totalCitations: number;
     uniqueBots: number;
+    isOwner: boolean;
   }[]
 > {
   const gte = new Date(
@@ -321,7 +307,12 @@ export async function loadSitesWithMetrics(accountId: string): Promise<
       },
     },
     orderBy: [{ domain: "asc" }, { createdAt: "desc" }],
-    where: { accountId },
+    where: {
+      OR: [
+        { ownerId: userId },
+        { siteUsers: { some: { userId } } },
+      ],
+    },
   });
 
   return sites.map((site) => {
@@ -364,27 +355,20 @@ export async function loadSitesWithMetrics(accountId: string): Promise<
       totalBotVisits: sumBy(site.botVisits, (v) => v.count),
       totalCitations: current.totalCitations,
       uniqueBots: uniqBy(site.botVisits, (v) => v.botType).length,
+      isOwner: site.ownerId === userId,
     };
   });
 }
 
-/**
- * Delete a site from an account.
- *
- * @param accountId - The account ID to delete the site from.
- * @param siteId - The ID of the site to delete.
- * @returns The deleted site.
- */
 export async function deleteSite({
-  accountId,
+  userId,
   siteId,
 }: {
-  accountId: string;
+  userId: string;
   siteId: string;
 }): Promise<void> {
-  // Verify site exists and belongs to user
   const site = await prisma.site.findFirst({
-    where: { id: siteId, accountId: accountId },
+    where: { id: siteId, ownerId: userId },
   });
   if (site) await prisma.site.delete({ where: { id: siteId } });
 }
