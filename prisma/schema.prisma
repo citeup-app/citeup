@@ -14,18 +14,6 @@ datasource db {
   relationMode = "foreignKeys"
 }
 
-model Account {
-  id          String                          @id @default(cuid())
-  createdAt   DateTime     @map("created_at") @default(now())
-  apiKey      String       @map("api_key")    @unique @default("")
-  hostname    String?      @map("hostname")
-  users       User[]
-  sites       Site[]
-  usageEvents UsageEvent[]
-
-  @@map("accounts")
-}
-
 model BotVisit {
   id        String                      @id @default(cuid())
   createdAt DateTime @map("created_at") @default(now())
@@ -133,22 +121,60 @@ model Session {
 }
 
 model Site {
-  account              Account               @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  accountId            String                @map("account_id")
+  owner                User                  @relation("OwnedSites", fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId              String                @map("owner_id")
+  apiKey               String                @map("api_key") @unique @default("")
   botInsight           BotInsight?
   botVisits            BotVisit[]
   citationRuns         CitationQueryRun[]
   content              String?               @map("content")
   createdAt            DateTime              @map("created_at") @default(now())
   domain               String                @map("domain")
-  id                   String                                   @id @default(cuid())
+  id                   String                @id @default(cuid())
   siteQueries          SiteQuery[]
   siteQuerySuggestions SiteQuerySuggestion[]
+  siteUsers            SiteUser[]
+  siteInvitations      SiteInvitation[]
+  usageEvents          UsageEvent[]
   updatedAt            DateTime              @map("updated_at") @updatedAt
 
   @@index([domain])
-  @@unique([accountId, domain])
+  @@unique([ownerId, domain])
   @@map("sites")
+}
+
+model SiteUser {
+  siteId    String   @map("site_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @map("created_at") @default(now())
+
+  site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([siteId, userId])
+  @@map("site_users")
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+}
+
+model SiteInvitation {
+  id          String           @id @default(cuid())
+  siteId      String           @map("site_id")
+  invitedById String           @map("invited_by_id")
+  email       String           @map("email")
+  token       String           @map("token") @unique
+  status      InvitationStatus @default(PENDING)
+  createdAt   DateTime         @map("created_at") @default(now())
+  acceptedAt  DateTime?        @map("accepted_at")
+
+  site        Site             @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  invitedBy   User             @relation("SentInvitations", fields: [invitedById], references: [id])
+
+  @@map("site_invitations")
 }
 
 model SiteQuery {
@@ -180,31 +206,30 @@ model SiteQuerySuggestion {
 model UsageEvent {
   id           String                         @id @default(cuid())
   createdAt    DateTime @map("created_at")    @default(now())
-  accountId    String   @map("account_id")
-  account      Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  siteId       String   @map("site_id")
+  site         Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
   model        String   @map("model")
   inputTokens  Int      @map("input_tokens")  @default(0)
   outputTokens Int      @map("output_tokens") @default(0)
   cost         Decimal  @map("cost")          @db.Decimal(10, 6)
 
-  @@index([accountId, createdAt])
+  @@index([siteId, createdAt])
   @@map("usage_events")
 }
 
 model User {
-  account                 Account                  @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  accountId               String                   @map("account_id")
   createdAt               DateTime                 @map("created_at")        @default(now())
   email                   String                   @map("email")             @unique
   emailVerificationTokens EmailVerificationToken[]
   emailVerifiedAt         DateTime?                @map("email_verified_at")
   id                      String                                             @id @default(cuid())
+  ownedSites              Site[]                   @relation("OwnedSites")
   passwordHash            String                   @map("password_hash")
   passwordRecoveryTokens  PasswordRecoveryToken[]
   sessions                Session[]
+  siteUsers               SiteUser[]
+  sentInvitations         SiteInvitation[]         @relation("SentInvitations")
   updatedAt               DateTime                 @map("updated_at")        @updatedAt
 
-  @@index([accountId])
   @@map("users")
 }
-
