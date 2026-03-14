@@ -22,8 +22,6 @@ async function seedUser(): Promise<User> {
 }
 
 async function seedSites(user: User): Promise<Site> {
-  const apiKey = "cite.me.in_21945ffb0342eb204b60aaf28c7bdca9";
-
   const rentail = await prisma.site.upsert({
     where: {
       id: "cmm6i5m3p0000mfrcir8ilttq",
@@ -32,7 +30,7 @@ async function seedSites(user: User): Promise<Site> {
     create: {
       id: "cmm6i5m3p0000mfrcir8ilttq",
       ownerId: user.id,
-      apiKey,
+      apiKey: "cite.me.in_21945ffb0342eb204b60aaf28c7bdca9",
       content:
         "rentail .space  Sign In  🎉 Rent for days, weeks, or months Find Your Next Mall Space in Under 2 Minutes Find short-term retail spaces in shopping centers—without the broker meetings or endless phone calls. Built for small businesses and seasonal sellers. Just instant matches with spaces ready for your products. Find My Match Why Choose rentail .space? Short-term retail spaces in shopping centers near you.",
       domain: "rentail.space",
@@ -47,6 +45,7 @@ async function seedSites(user: User): Promise<Site> {
     create: {
       id: "cmm6jgk1u0000f5rcxmtgpwga",
       ownerId: user.id,
+      apiKey: "cite.me.in_21945ffb0342eb204b60aaf28c7bdca9",
       content:
         "Cite.me.in Sign in Get started The Search Console for AI Does ChatGPT mention  your brand? Cite.me.in runs your queries across ChatGPT, Claude, Gemini, and Perplexity — and records every time they cite your website.",
       domain: process.env.VITE_APP_URL ?? "",

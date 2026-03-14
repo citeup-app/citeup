@@ -13,9 +13,16 @@ beforeEach(async () => {
   await prisma.site.upsert({
     where: { id: SITE_ID },
     create: {
+      apiKey: "cite.me.in_21945ffb0342eb204b60aaf28c7bdca9",
       id: SITE_ID,
       domain: "test-usage.example.com",
-      owner: { create: { id: "test-usage-user-1", email: "usage@test.com", passwordHash: "test" } },
+      owner: {
+        create: {
+          id: "test-usage-user-1",
+          email: "usage@test.com",
+          passwordHash: "test",
+        },
+      },
     },
     update: {},
   });
