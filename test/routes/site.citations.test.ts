@@ -131,7 +131,6 @@ describe("unauthenticated access", () => {
 
 describe("site page", () => {
   let user: User;
-  let siteId: string;
   let siteDomain: string;
 
   beforeAll(async () => {
@@ -143,9 +142,13 @@ describe("site page", () => {
       },
     });
     const site = await prisma.site.create({
-      data: { id: "site-1", domain: HOSTNAME, ownerId: user.id, apiKey: "test-api-key-citations-1" },
+      data: {
+        id: "site-1",
+        domain: HOSTNAME,
+        ownerId: user.id,
+        apiKey: "test-api-key-citations-1",
+      },
     });
-    siteId = site.id;
     siteDomain = site.domain;
 
     // Three runs per platform (oldest → newest) so charts have ≥2 data points.
