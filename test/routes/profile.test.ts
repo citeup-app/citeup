@@ -28,7 +28,6 @@ describe("profile route", () => {
         id: "user-1",
         email: EMAIL,
         passwordHash: await hashPassword(PASSWORD),
-        account: { create: { id: "account-1", apiKey: "api-key-1" } },
       },
     });
     await signIn(user.id);
@@ -71,7 +70,6 @@ describe("profile route", () => {
           id: "user-2",
           email: "existing-email@example.com",
           passwordHash: await hashPassword(PASSWORD),
-          account: { create: { id: "account-2", apiKey: "api-key-2" } },
         },
       });
 

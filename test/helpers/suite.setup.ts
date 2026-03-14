@@ -15,7 +15,7 @@ Sentry.init({ enabled: false });
 
 beforeAll(async () => {
   // Cleanup database
-  await prisma.account.deleteMany();
+  await prisma.user.deleteMany();
 
   msw();
 });

@@ -27,7 +27,7 @@ function callLoader(req: Request) {
 
 describe("cron.bot-insights", () => {
   beforeEach(async () => {
-    await prisma.account.deleteMany();
+    await prisma.user.deleteMany();
     vi.clearAllMocks();
   });
 
@@ -55,7 +55,7 @@ describe("cron.bot-insights", () => {
         data: {
           id: "site-cron-insights-1",
           domain: "old-visits.example.com",
-          account: { create: { id: "account-cron-insights-1" } },
+          owner: { create: { id: "user-cron-insights-1", email: "cron1@test.com", passwordHash: "test" } },
           botVisits: {
             create: {
               botType: "ChatGPT",
@@ -83,7 +83,7 @@ describe("cron.bot-insights", () => {
         data: {
           id: "site-cron-insights-2",
           domain: "recent-visits.example.com",
-          account: { create: { id: "account-cron-insights-2" } },
+          owner: { create: { id: "user-cron-insights-2", email: "cron2@test.com", passwordHash: "test" } },
           botVisits: {
             create: {
               botType: "ChatGPT",
@@ -120,7 +120,7 @@ describe("cron.bot-insights", () => {
         data: {
           id: "site-cron-insights-3",
           domain: "idempotent.example.com",
-          account: { create: { id: "account-cron-insights-3" } },
+          owner: { create: { id: "user-cron-insights-3", email: "cron3@test.com", passwordHash: "test" } },
           botVisits: {
             create: {
               botType: "Perplexity",

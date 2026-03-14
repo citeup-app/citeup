@@ -76,7 +76,6 @@ describe("site bots page", () => {
     user = await prisma.user.create({
       data: {
         id: "user-1",
-        account: { create: { id: "account-1", apiKey: "api-key-1" } },
         email: "site-bots-test@test.com",
         passwordHash: "test",
       },
@@ -85,7 +84,7 @@ describe("site bots page", () => {
       data: {
         id: "site-1",
         domain: "bots-test.example.com",
-        accountId: user.accountId,
+        ownerId: user.id,
       },
     });
     siteId = site.id;

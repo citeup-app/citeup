@@ -26,9 +26,6 @@ describe("site queries page", () => {
     user = await prisma.user.create({
       data: {
         id: "user-queries-1",
-        account: {
-          create: { id: "account-queries-1", apiKey: "api-key-queries-1" },
-        },
         email: "site-queries-test@test.com",
         passwordHash: "test",
       },
@@ -37,7 +34,7 @@ describe("site queries page", () => {
       data: {
         id: "site-queries-1",
         domain: "queries-test.example.com",
-        accountId: user.accountId,
+        ownerId: user.id,
       },
     });
     siteId = site.id;
@@ -144,7 +141,7 @@ describe("site queries page", () => {
         data: {
           id: "site-suggest-1",
           domain: "suggest-test.example.com",
-          accountId: user.accountId,
+          ownerId: user.id,
           content: "Rentail helps brands find short-term retail space.",
         },
       });

@@ -28,10 +28,13 @@ describe("generateSiteQueries", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    await prisma.account.deleteMany();
+    await prisma.user.deleteMany();
+    const user = await prisma.user.create({
+      data: { id: "user-gsq-1", email: "gsq@test.com", passwordHash: "test" },
+    });
     site = await prisma.site.create({
       data: {
-        account: { create: {} },
+        ownerId: user.id,
         id: "site-1",
         domain: "rentail.space",
         content: "Rentail helps brands find pop-up retail space.",

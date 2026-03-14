@@ -16,9 +16,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   )
     return new Response("Unauthorized", { status: 401 });
 
-  const sites = await prisma.site.findMany({
-    where: { account: { users: { some: {} } } },
-  });
+  const sites = await prisma.site.findMany();
   logger(
     "[cron:citation-runs] Updating sites: %s",
     sites.map(({ domain }) => domain).join(", "),

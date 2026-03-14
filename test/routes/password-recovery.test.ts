@@ -14,7 +14,6 @@ describe("password recovery route", () => {
         id: "user-1",
         email: EMAIL,
         passwordHash: await hashPassword(PASSWORD),
-        account: { create: { id: "account-1", apiKey: "api-key-1" } },
       },
     });
   });

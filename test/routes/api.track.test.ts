@@ -18,36 +18,32 @@ function authHeader() {
 
 describe("api.track", () => {
   beforeAll(async () => {
-    await prisma.account.create({
+    await prisma.user.create({
       data: {
-        id: "account-apitrack-1",
-        apiKey: "test-api-key-apitrack-1",
-        users: {
+        id: "user-apitrack-1",
+        email: "apitrack@test.com",
+        passwordHash: "test",
+        ownedSites: {
           create: {
-            id: "user-apitrack-1",
-            email: "apitrack@test.com",
-            passwordHash: "test",
+            id: "site-apitrack-1",
+            domain: "apitrack.example.com",
+            apiKey: "test-api-key-apitrack-1",
           },
-        },
-        sites: {
-          create: { id: "site-apitrack-1", domain: "apitrack.example.com" },
         },
       },
     });
 
-    await prisma.account.create({
+    await prisma.user.create({
       data: {
-        id: "account-apitrack-2",
-        apiKey: "test-api-key-apitrack-2",
-        users: {
+        id: "user-apitrack-2",
+        email: "apitrack2@test.com",
+        passwordHash: "test",
+        ownedSites: {
           create: {
-            id: "user-apitrack-2",
-            email: "apitrack2@test.com",
-            passwordHash: "test",
+            id: "site-apitrack-2",
+            domain: "other-apitrack.example.com",
+            apiKey: "test-api-key-apitrack-2",
           },
-        },
-        sites: {
-          create: { id: "site-apitrack-2", domain: "other-apitrack.example.com" },
         },
       },
     });

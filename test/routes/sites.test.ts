@@ -25,9 +25,6 @@ describe("sites route", () => {
         id: "user-sites-test",
         email: "sites-test@example.com",
         passwordHash: await hashPassword("correct-password-123"),
-        account: {
-          create: { id: "account-sites-test", apiKey: "api-key-sites-test" },
-        },
       },
     });
     await signIn(user.id);
@@ -99,7 +96,7 @@ describe("sites route", () => {
         data: {
           id: "site-1",
           domain: "duplicate-test.com",
-          accountId: user.accountId,
+          ownerId: user.id,
         },
       });
       page = await goto("/sites");
@@ -138,7 +135,7 @@ describe("sites route", () => {
       });
 
       site = await prisma.site.findFirstOrThrow({
-        where: { domain: "example.com", accountId: user.accountId },
+        where: { domain: "example.com", ownerId: user.id },
       });
     });
 
@@ -197,7 +194,7 @@ describe("sites route", () => {
         data: {
           id: "site-dashboard-test",
           domain: "dashboard-test.com",
-          accountId: user.accountId,
+          ownerId: user.id,
         },
       });
       page = await goto("/sites");
@@ -273,7 +270,7 @@ describe("sites route", () => {
 
         it("should delete site", async () => {
           const updated = await prisma.site.count({
-            where: { accountId: user.accountId },
+            where: { ownerId: user.id },
           });
           expect(updated).toBe(count - 1);
         });
@@ -293,7 +290,7 @@ describe("sites route", () => {
         data: {
           id: siteId,
           domain: "delta-test.com",
-          accountId: user.accountId,
+          ownerId: user.id,
         },
       });
     });

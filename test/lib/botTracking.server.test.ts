@@ -21,10 +21,13 @@ function makeRequest(
 
 describe("trackBotVisit", () => {
   beforeEach(async () => {
-    await prisma.account.deleteMany();
+    await prisma.user.deleteMany();
+    const user = await prisma.user.create({
+      data: { id: "user-bot-1", email: "bot@test.com", passwordHash: "test" },
+    });
     await prisma.site.create({
       data: {
-        account: { create: { id: "account-1" } },
+        ownerId: user.id,
         domain: new URL("/", import.meta.env.VITE_APP_URL).hostname,
       },
     });

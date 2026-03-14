@@ -57,7 +57,7 @@ test("fills out site add form", async () => {
 
 test("verifies site created in DB", async () => {
   site = await prisma.site.findFirstOrThrow({
-    where: { accountId: user?.accountId },
+    where: { ownerId: user?.id },
   });
   expect(site.domain).toBe("example.com");
 });

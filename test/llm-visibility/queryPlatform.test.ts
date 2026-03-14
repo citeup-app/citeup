@@ -48,7 +48,7 @@ const QUERIES = [
 ];
 
 const PLATFORM_ARGS = {
-  accountId: "account-1",
+  siteId: "site-1",
   modelId: "claude-haiku-4-5-20251001",
   platform: "claude",
   queries: QUERIES,
@@ -65,11 +65,14 @@ describe("queryPlatform", () => {
   let site: { id: string; domain: string; createdAt: Date };
 
   beforeAll(async () => {
+    const user = await prisma.user.create({
+      data: { id: "user-qp-1", email: "qp@test.com", passwordHash: "test" },
+    });
     site = await prisma.site.create({
       data: {
         id: "site-1",
         domain: "rentail.space",
-        account: { create: { id: "account-1" } },
+        ownerId: user.id,
       },
     });
   });
