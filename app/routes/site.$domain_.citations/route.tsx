@@ -25,7 +25,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const user = await requireUser(request);
   const site = await prisma.site.findFirst({
     where: {
-      id: params.id,
+      domain: params.domain,
       OR: [
         { ownerId: user.id },
         { siteUsers: { some: { userId: user.id } } },
@@ -57,7 +57,7 @@ export default function SiteCitationsPage({
       <SitePageHeader
         site={site}
         title="Citations"
-        backTo={{ label: "Edit queries", path: `/site/${site.id}/queries` }}
+        backTo={{ label: "Edit queries", path: `/site/${site.domain}/queries` }}
       />
 
       <div className="flex justify-center">

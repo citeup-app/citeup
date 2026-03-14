@@ -26,7 +26,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const user = await requireUser(request);
   const site = await prisma.site.findFirst({
     where: {
-      id: params.id,
+      domain: params.domain,
       OR: [
         { ownerId: user.id },
         { siteUsers: { some: { userId: user.id } } },
@@ -54,7 +54,7 @@ export async function action({ request, params }: Route.ActionArgs) {
   const user = await requireUser(request);
   const site = await prisma.site.findFirst({
     where: {
-      id: params.id,
+      domain: params.domain,
       OR: [
         { ownerId: user.id },
         { siteUsers: { some: { userId: user.id } } },
@@ -134,7 +134,7 @@ export default function SiteQueriesPage({ loaderData }: Route.ComponentProps) {
       <SitePageHeader
         site={site}
         title="Citation Queries"
-        backTo={{ label: "Citations", path: `/site/${site.id}/citations` }}
+        backTo={{ label: "Citations", path: `/site/${site.domain}/citations` }}
       />
 
       <p className="text-base text-foreground/60">

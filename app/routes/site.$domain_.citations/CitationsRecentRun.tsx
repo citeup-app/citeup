@@ -68,7 +68,7 @@ export default function RecentVisibility({
                   {positions(query.citations, site.domain)}
                 </TableCell>
                 <TableCell className="text-right">
-                  <Link to={`/site/${site.id}/citation/${query.id}`}>
+                  <Link to={`/site/${site.domain}/citation/${query.id}`}>
                     <ArrowRightIcon className="size-4" />
                   </Link>
                 </TableCell>

@@ -46,7 +46,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const user = await requireUser(request);
   const site = await prisma.site.findFirst({
     where: {
-      id: params.id,
+      domain: params.domain,
       OR: [{ ownerId: user.id }, { siteUsers: { some: { userId: user.id } } }],
     },
     include: {
@@ -68,7 +68,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 export async function action({ request, params }: Route.ActionArgs) {
   const user = await requireUser(request);
   const site = await prisma.site.findFirst({
-    where: { id: params.id, ownerId: user.id },
+    where: { domain: params.domain, ownerId: user.id },
   });
   if (!site) throw new Response("Forbidden", { status: 403 });
 
@@ -95,7 +95,7 @@ export default function SiteSettingsPage({ loaderData }: Route.ComponentProps) {
       <section className="space-y-8">
         <ApiKeySection apiKey={site.apiKey} script={script} />
         <MembersSection site={site} isOwner={isOwner} />
-        {isOwner && <InviteSection siteId={site.id} invitations={site.siteInvitations} />}
+        {isOwner && <InviteSection siteDomain={site.domain} invitations={site.siteInvitations} />}
       </section>
     </Main>
   );
@@ -200,10 +200,10 @@ function MembersSection({
 }
 
 function InviteSection({
-  siteId,
+  siteDomain,
   invitations,
 }: {
-  siteId: string;
+  siteDomain: string;
   invitations: { id: string; email: string; createdAt: Date }[];
 }) {
   const fetcher = useFetcher();
@@ -212,7 +212,7 @@ function InviteSection({
     <div className="space-y-4 rounded-base border-2 border-black bg-white p-6 shadow-[4px_4px_0px_0px_black]">
       <h2 className="font-heading text-xl">Invite Member</h2>
 
-      <fetcher.Form method="post" action={`/site/${siteId}/invite`} className="flex gap-3">
+      <fetcher.Form method="post" action={`/site/${siteDomain}/invite`} className="flex gap-3">
         <input
           type="email"
           name="email"

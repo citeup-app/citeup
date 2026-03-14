@@ -29,20 +29,21 @@ export function meta(): Route.MetaDescriptors {
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   const user = await requireUser(request);
-  const suggestions = await prisma.siteQuerySuggestion.findMany({
-    where: { siteId: params.id },
-  });
-  if (suggestions.length === 0) throw redirect(`/site/${params.id}/queries`);
   const site = await prisma.site.findFirst({
     where: {
-      id: params.id,
+      domain: params.domain,
       OR: [
         { ownerId: user.id },
         { siteUsers: { some: { userId: user.id } } },
       ],
     },
   });
-  return { siteId: params.id, site, suggestions };
+  if (!site) throw new Response("Not found", { status: 404 });
+  const suggestions = await prisma.siteQuerySuggestion.findMany({
+    where: { siteId: site.id },
+  });
+  if (suggestions.length === 0) throw redirect(`/site/${params.domain}/queries`);
+  return { site, suggestions };
 }
 
 export async function action({ params, request }: Route.ActionArgs) {
@@ -50,7 +51,7 @@ export async function action({ params, request }: Route.ActionArgs) {
     const user = await requireUser(request);
     const site = await prisma.site.findFirst({
       where: {
-        id: params.id,
+        domain: params.domain,
         OR: [
           { ownerId: user.id },
           { siteUsers: { some: { userId: user.id } } },
@@ -63,11 +64,11 @@ export async function action({ params, request }: Route.ActionArgs) {
       case "PUT": {
         const formData = await request.formData();
         const content = formData.get("content")?.toString() ?? "";
-        const site = await prisma.site.update({
-          where: { id: params.id },
+        const updatedSite = await prisma.site.update({
+          where: { id: site.id },
           data: { content },
         });
-        await generateSiteQueries(site);
+        await generateSiteQueries(updatedSite);
         return { ok: true };
       }
 
@@ -77,7 +78,7 @@ export async function action({ params, request }: Route.ActionArgs) {
           .array(z.object({ group: z.string(), query: z.string() }))
           .parse(raw);
         await addSiteQueries(site, queries);
-        return redirect(`/site/${params.id}/citations`);
+        return redirect(`/site/${params.domain}/citations`);
       }
     }
   } catch (error) {
@@ -205,7 +206,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
         {isProcessing && <GradualProgress />}
 
         <ActiveLink
-          to={`/site/${loaderData.siteId}`}
+          to={`/site/${loaderData.site.domain}`}
           className="text-base text-foreground/60 underline"
         >
           Skip

@@ -26,7 +26,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const user = await requireUser(request);
   const site = await prisma.site.findFirst({
     where: {
-      id: params.id,
+      domain: params.domain,
       OR: [
         { ownerId: user.id },
         { siteUsers: { some: { userId: user.id } } },

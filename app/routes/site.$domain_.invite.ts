@@ -3,18 +3,18 @@ import { requireUser } from "~/lib/auth.server";
 import captureException from "~/lib/captureException.server";
 import sendSiteInvitationEmail from "~/lib/emails/SiteInvitation";
 import prisma from "~/lib/prisma.server";
-import type { Route } from "./+types/site.$id_.invite";
+import type { Route } from "./+types/site.$domain_.invite";
 
 export async function action({ request, params }: Route.ActionArgs) {
   const user = await requireUser(request);
   const site = await prisma.site.findFirst({
-    where: { id: params.id, ownerId: user.id },
+    where: { domain: params.domain, ownerId: user.id },
   });
   if (!site) throw new Response("Forbidden", { status: 403 });
 
   const formData = await request.formData();
   const email = formData.get("email")?.toString().trim().toLowerCase() ?? "";
-  if (!email) return redirect(`/site/${site.id}/settings`);
+  if (!email) return redirect(`/site/${site.domain}/settings`);
 
   // Check if already a member
   const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -23,7 +23,7 @@ export async function action({ request, params }: Route.ActionArgs) {
       where: { siteId_userId: { siteId: site.id, userId: existingUser.id } },
     });
     if (alreadyMember || existingUser.id === site.ownerId)
-      return redirect(`/site/${site.id}/settings`);
+      return redirect(`/site/${site.domain}/settings`);
   }
 
   // Cancel any existing pending invite for this email+site
@@ -48,7 +48,7 @@ export async function action({ request, params }: Route.ActionArgs) {
     captureException(error);
   }
 
-  return redirect(`/site/${site.id}/settings`);
+  return redirect(`/site/${site.domain}/settings`);
 }
 
 export async function loader() {

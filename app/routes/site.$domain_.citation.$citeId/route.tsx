@@ -32,7 +32,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       id: params.citeId,
       run: {
         site: {
-          id: params.id,
+          domain: params.domain,
           OR: [
             { ownerId: user.id },
             { siteUsers: { some: { userId: user.id } } },
@@ -57,7 +57,7 @@ export default function SiteCitationsPage({
       <SitePageHeader
         site={site}
         title="Citations"
-        backTo={{ label: "All citations", path: `/site/${site.id}/citations` }}
+        backTo={{ label: "All citations", path: `/site/${site.domain}/citations` }}
       />
 
       <Card>
