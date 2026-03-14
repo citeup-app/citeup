@@ -57,6 +57,7 @@ async function queryPlatform({ site, platform, queries }: { ... }) {
 
 - `try/catch` + `captureException` at orchestration layer only; let errors bubble from helpers
 - Return `{ error: string }` from actions for user-facing errors; throw for unexpected ones
+- When auth helpers (`requireUser`, `requireSiteAccess`) are called inside a try/catch, re-throw `Response` so 404/403/redirects aren't swallowed:
 
 ```ts
 try {
@@ -65,6 +66,16 @@ try {
 } catch (error) {
   captureException(error);
   return { error: "That email is already in use" };
+}
+
+// Auth inside try/catch — must re-throw Response:
+try {
+  const site = await requireSiteAccess(params.domain, user.id);
+  // ...
+} catch (error) {
+  if (error instanceof Response) throw error;
+  captureException(error);
+  return { error: "Something went wrong" };
 }
 ```
 
@@ -125,6 +136,8 @@ logger("[%s:%s] Failed: %o", site.id, platform, error);
 
 - `~/` → `app/`; `~/prisma` → `prisma/generated/client`
 - Auth: `getCurrentUser(request)` (root loader, nullable) and `requireUser(request)` (protected routes, throws redirect) — see `app/lib/auth.server.ts`
+- Site access: `requireSiteAccess(domain, userId)` (member or owner, throws 404) and `requireSiteOwner(domain, userId)` (owner only, throws 403) — see `app/lib/sites.server.ts`; use these in every site route instead of inlining `prisma.site.findFirst`
+- Site routes use `$domain` URL param (e.g. `site.$domain_.citations`) — the domain uniquely identifies a site per user
 - Blog post dates come from filenames: `app/data/blog/YYYY-MM-DD-slug.md`
 - Do NOT add `react`/`react-dom` to `optimizeDeps.include` in `vite.config.ts` — creates duplicate React instances that break all hooks
 
