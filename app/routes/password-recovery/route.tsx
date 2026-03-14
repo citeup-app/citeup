@@ -10,8 +10,8 @@ import {
   FieldSet,
 } from "~/components/ui/FieldSet";
 import { Input } from "~/components/ui/Input";
+import sendPasswordRecoveryEmail from "~/emails/PasswordRecovery";
 import captureException from "~/lib/captureException.server";
-import sendPasswordRecoveryEmail from "~/lib/emails/PasswordRecovery";
 import prisma from "~/lib/prisma.server";
 import type { Route } from "./+types/route";
 

@@ -4,9 +4,9 @@ import { Form, redirect } from "react-router";
 import AuthForm from "~/components/ui/AuthForm";
 import { Button } from "~/components/ui/Button";
 import { FieldSet } from "~/components/ui/FieldSet";
+import sendEmailVerificationEmail from "~/emails/EmailVerification";
 import { createEmailVerificationToken } from "~/lib/auth.server";
 import captureException from "~/lib/captureException.server";
-import sendEmailVerificationEmail from "~/lib/emails/EmailVerification";
 import prisma from "~/lib/prisma.server";
 import type { Route } from "./+types/route";
 

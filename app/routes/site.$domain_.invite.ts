@@ -1,7 +1,7 @@
 import { redirect } from "react-router";
+import sendSiteInvitationEmail from "~/emails/SiteInvitation";
 import { requireUser } from "~/lib/auth.server";
 import captureException from "~/lib/captureException.server";
-import sendSiteInvitationEmail from "~/lib/emails/SiteInvitation";
 import prisma from "~/lib/prisma.server";
 import type { Route } from "./+types/site.$domain_.invite";
 

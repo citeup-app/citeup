@@ -10,13 +10,13 @@ import {
   FieldSet,
 } from "~/components/ui/FieldSet";
 import { Input } from "~/components/ui/Input";
+import sendEmailVerificationEmail from "~/emails/EmailVerification";
 import {
   createEmailVerificationToken,
   createSession,
   hashPassword,
 } from "~/lib/auth.server";
 import captureException from "~/lib/captureException.server";
-import sendEmailVerificationEmail from "~/lib/emails/EmailVerification";
 import prisma from "~/lib/prisma.server";
 import type { Route } from "./+types/route";
 
@@ -70,7 +70,10 @@ export async function action({ request }: Route.ActionArgs) {
   return redirect(redirectTo, { headers: { "Set-Cookie": setCookie } });
 }
 
-export default function SignUp({ actionData, loaderData }: Route.ComponentProps) {
+export default function SignUp({
+  actionData,
+  loaderData,
+}: Route.ComponentProps) {
   const errors = actionData?.errors ?? {};
 
   return (
@@ -79,7 +82,11 @@ export default function SignUp({ actionData, loaderData }: Route.ComponentProps)
       form={
         <Form method="post">
           {loaderData.inviteToken && (
-            <input type="hidden" name="inviteToken" value={loaderData.inviteToken} />
+            <input
+              type="hidden"
+              name="inviteToken"
+              value={loaderData.inviteToken}
+            />
           )}
           <FieldSet>
             <FieldGroup>
