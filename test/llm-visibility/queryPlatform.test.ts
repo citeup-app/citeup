@@ -73,6 +73,7 @@ describe("queryPlatform", () => {
         id: "site-1",
         domain: "rentail.space",
         ownerId: user.id,
+        apiKey: "test-api-key-qp-1",
       },
     });
   });

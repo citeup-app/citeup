@@ -28,6 +28,7 @@ describe("trackBotVisit", () => {
     await prisma.site.create({
       data: {
         ownerId: user.id,
+        apiKey: "test-api-key-bot-tracking-1",
         domain: new URL("/", import.meta.env.VITE_APP_URL).hostname,
       },
     });

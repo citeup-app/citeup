@@ -37,6 +37,7 @@ describe("generateSiteQueries", () => {
         ownerId: user.id,
         id: "site-1",
         domain: "rentail.space",
+        apiKey: "test-api-key-gsq-1",
         content: "Rentail helps brands find pop-up retail space.",
       },
     });

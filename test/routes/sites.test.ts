@@ -97,6 +97,7 @@ describe("sites route", () => {
           id: "site-1",
           domain: "duplicate-test.com",
           ownerId: user.id,
+          apiKey: "test-api-key-sites-1",
         },
       });
       page = await goto("/sites");
@@ -195,6 +196,7 @@ describe("sites route", () => {
           id: "site-dashboard-test",
           domain: "dashboard-test.com",
           ownerId: user.id,
+          apiKey: "test-api-key-sites-dashboard",
         },
       });
       page = await goto("/sites");
@@ -291,12 +293,9 @@ describe("sites route", () => {
           id: siteId,
           domain: "delta-test.com",
           ownerId: user.id,
+          apiKey: "test-api-key-sites-delta",
         },
       });
-    });
-
-    afterAll(async () => {
-      await prisma.site.delete({ where: { id: siteId } });
     });
 
     describe("with no runs", () => {

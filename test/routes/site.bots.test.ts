@@ -85,6 +85,7 @@ describe("site bots page", () => {
         id: "site-1",
         domain: "bots-test.example.com",
         ownerId: user.id,
+        apiKey: "test-api-key-bots-1",
       },
     });
     siteId = site.id;

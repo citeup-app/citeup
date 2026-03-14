@@ -35,6 +35,7 @@ describe("site queries page", () => {
         id: "site-queries-1",
         domain: "queries-test.example.com",
         ownerId: user.id,
+        apiKey: "test-api-key-queries-1",
       },
     });
     siteId = site.id;
@@ -142,6 +143,7 @@ describe("site queries page", () => {
           id: "site-suggest-1",
           domain: "suggest-test.example.com",
           ownerId: user.id,
+          apiKey: "test-api-key-suggest-1",
           content: "Rentail helps brands find short-term retail space.",
         },
       });

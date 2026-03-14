@@ -55,6 +55,7 @@ describe("cron.bot-insights", () => {
         data: {
           id: "site-cron-insights-1",
           domain: "old-visits.example.com",
+          apiKey: "test-api-key-cron-insights-1",
           owner: { create: { id: "user-cron-insights-1", email: "cron1@test.com", passwordHash: "test" } },
           botVisits: {
             create: {
@@ -83,6 +84,7 @@ describe("cron.bot-insights", () => {
         data: {
           id: "site-cron-insights-2",
           domain: "recent-visits.example.com",
+          apiKey: "test-api-key-cron-insights-2",
           owner: { create: { id: "user-cron-insights-2", email: "cron2@test.com", passwordHash: "test" } },
           botVisits: {
             create: {
@@ -120,6 +122,7 @@ describe("cron.bot-insights", () => {
         data: {
           id: "site-cron-insights-3",
           domain: "idempotent.example.com",
+          apiKey: "test-api-key-cron-insights-3",
           owner: { create: { id: "user-cron-insights-3", email: "cron3@test.com", passwordHash: "test" } },
           botVisits: {
             create: {

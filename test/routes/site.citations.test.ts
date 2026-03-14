@@ -142,7 +142,7 @@ describe("site page", () => {
       },
     });
     const site = await prisma.site.create({
-      data: { id: "site-1", domain: HOSTNAME, ownerId: user.id },
+      data: { id: "site-1", domain: HOSTNAME, ownerId: user.id, apiKey: "test-api-key-citations-1" },
     });
     siteId = site.id;
 
