@@ -20,8 +20,13 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   return Response.json({
     users: users.map(({ ownedSites, ...user }) => ({
-      ...user,
-      sites: ownedSites,
+      id: user.id,
+      email: user.email,
+      createdAt: user.createdAt,
+      sites: ownedSites.map(({ domain, createdAt }) => ({
+        createdAt,
+        domain,
+      })),
     })),
   });
 }

@@ -4,6 +4,7 @@ import env from "env-var";
 dotenv.config({ quiet: true });
 
 const envVars = {
+  ADMIN_API_SECRET: env.get("ADMIN_API_SECRET").required(false).asString(),
   ANTHROPIC_API_KEY: env.get("ANTHROPIC_API_KEY").required().asString(),
   BOT_TRACKER_API_KEY: env.get("BOT_TRACKER_API_KEY").required().asString(),
   BOT_TRACKER_URL: env.get("BOT_TRACKER_URL").required().asUrlString(),
@@ -13,12 +14,6 @@ const envVars = {
     .required(false)
     .asString(),
   CRON_SECRET: env.get("CRON_SECRET").required(false).asString(),
-  ADMIN_API_SECRET: env.get("ADMIN_API_SECRET").required(false).asString(),
-  POSTGRES_URL: env.get("POSTGRES_URL").required().asUrlString(),
-  POSTGRES_URL_NON_POOLING: env
-    .get("POSTGRES_URL_NON_POOLING")
-    .required()
-    .asUrlString(),
   GOOGLE_GENERATIVE_AI_API_KEY: env
     .get("GOOGLE_GENERATIVE_AI_API_KEY")
     .required(false)
@@ -27,6 +22,11 @@ const envVars = {
   LOGTAIL_TOKEN: env.get("LOGTAIL_TOKEN").required(false).asString(),
   OPENAI_API_KEY: env.get("OPENAI_API_KEY").required(false).asString(),
   PERPLEXITY_API_KEY: env.get("PERPLEXITY_API_KEY").required(false).asString(),
+  POSTGRES_URL: env.get("POSTGRES_URL").required().asUrlString(),
+  POSTGRES_URL_NON_POOLING: env
+    .get("POSTGRES_URL_NON_POOLING")
+    .required()
+    .asUrlString(),
   REDIS_URL: env.get("REDIS_URL").required().asString(),
   RESEND_API_KEY: env.get("RESEND_API_KEY").required().asString(),
   SESSION_SECRET: env.get("SESSION_SECRET").required().asString(),

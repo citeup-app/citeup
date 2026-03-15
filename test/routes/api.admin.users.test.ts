@@ -1,9 +1,8 @@
 import type { Route } from ".react-router/types/app/routes/+types/api.admin.users";
-import { beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
+import envVars from "~/lib/envVars";
 import prisma from "~/lib/prisma.server";
 import { loader } from "~/routes/api.admin.users";
-
-const ADMIN_SECRET = "test-admin-secret-admin-users";
 
 function makeRequest(token?: string) {
   return new Request("http://localhost/api/admin/users", {
@@ -13,7 +12,11 @@ function makeRequest(token?: string) {
 
 async function callLoader(req: Request) {
   try {
-    return await loader({ request: req, params: {}, context: {} } as Route.LoaderArgs);
+    return await loader({
+      request: req,
+      params: {},
+      context: {},
+    } as Route.LoaderArgs);
   } catch (error) {
     if (error instanceof Response) return error;
     throw error;
@@ -21,14 +24,6 @@ async function callLoader(req: Request) {
 }
 
 describe("api.admin.users", () => {
-  beforeAll(() => {
-    process.env.ADMIN_API_SECRET = ADMIN_SECRET;
-  });
-
-  beforeEach(async () => {
-    await prisma.user.deleteMany();
-  });
-
   it("returns 401 without a token", async () => {
     const res = await callLoader(makeRequest());
     expect(res.status).toBe(401);
@@ -53,7 +48,7 @@ describe("api.admin.users", () => {
       },
     });
 
-    const res = await callLoader(makeRequest(ADMIN_SECRET));
+    const res = await callLoader(makeRequest(envVars.ADMIN_API_SECRET));
     expect(res.status).toBe(200);
 
     const body = await res.json();
