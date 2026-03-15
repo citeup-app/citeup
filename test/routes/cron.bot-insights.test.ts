@@ -1,28 +1,11 @@
-import type { Route } from ".react-router/types/app/routes/+types/cron.bot-insights";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import prisma from "~/lib/prisma.server";
-import { loader } from "~/routes/cron.bot-insights";
+import { port } from "../helpers/launchBrowser";
 
-vi.mock("~/lib/envVars", () => ({
-  default: { CRON_SECRET: "test-secret" },
-}));
-
-vi.mock("~/lib/llm-visibility/generateBotInsight", () => ({
-  default: vi.fn().mockResolvedValue("ChatGPT visited 8 times this week."),
-}));
-
-vi.mock("@sentry/react-router", () => ({
-  captureException: vi.fn(),
-}));
-
-function makeRequest(auth?: string) {
-  const headers: Record<string, string> = {};
-  if (auth) headers.Authorization = auth;
-  return new Request("http://localhost/cron/bot-insights", { headers });
-}
-
-function callLoader(req: Request) {
-  return loader({ request: req, params: {}, context: {} } as Route.LoaderArgs);
+async function makeRequest(auth?: string) {
+  return await fetch(`http://localhost:${port}/cron/bot-insights`, {
+    headers: { authorization: `Bearer ${auth}` },
+  });
 }
 
 describe("cron.bot-insights", () => {
@@ -32,18 +15,18 @@ describe("cron.bot-insights", () => {
   });
 
   describe("auth", () => {
-    it("returns 401 without Authorization header", async () => {
-      const res = await callLoader(makeRequest());
+    it("should return 401 without Authorization header", async () => {
+      const res = await makeRequest();
       expect(res.status).toBe(401);
     });
 
-    it("returns 401 with wrong token", async () => {
-      const res = await callLoader(makeRequest("Bearer wrong"));
+    it("should return 401 with wrong token", async () => {
+      const res = await makeRequest("wrong");
       expect(res.status).toBe(401);
     });
 
-    it("returns 200 with correct token", async () => {
-      const res = await callLoader(makeRequest("Bearer test-secret"));
+    it("should return 200 with correct token", async () => {
+      const res = await makeRequest("test-cron-secret");
       expect(res.status).toBe(200);
     });
   });
@@ -56,7 +39,13 @@ describe("cron.bot-insights", () => {
           id: "site-cron-insights-1",
           domain: "old-visits.example.com",
           apiKey: "test-api-key-cron-insights-1",
-          owner: { create: { id: "user-cron-insights-1", email: "cron1@test.com", passwordHash: "test" } },
+          owner: {
+            create: {
+              id: "user-cron-insights-1",
+              email: "cron1@test.com",
+              passwordHash: "test",
+            },
+          },
           botVisits: {
             create: {
               botType: "ChatGPT",
@@ -72,7 +61,7 @@ describe("cron.bot-insights", () => {
         },
       });
 
-      const res = await callLoader(makeRequest("Bearer test-secret"));
+      const res = await makeRequest("test-cron-secret");
       const body = await res.json();
       expect(body.results).toHaveLength(0);
       expect(await prisma.botInsight.count()).toBe(0);
@@ -85,7 +74,13 @@ describe("cron.bot-insights", () => {
           id: "site-cron-insights-2",
           domain: "recent-visits.example.com",
           apiKey: "test-api-key-cron-insights-2",
-          owner: { create: { id: "user-cron-insights-2", email: "cron2@test.com", passwordHash: "test" } },
+          owner: {
+            create: {
+              id: "user-cron-insights-2",
+              email: "cron2@test.com",
+              passwordHash: "test",
+            },
+          },
           botVisits: {
             create: {
               botType: "ChatGPT",
@@ -101,7 +96,7 @@ describe("cron.bot-insights", () => {
         },
       });
 
-      const res = await callLoader(makeRequest("Bearer test-secret"));
+      const res = await makeRequest("test-cron-secret");
       const body = await res.json();
       expect(body.ok).toBe(true);
       expect(body.results).toHaveLength(1);
@@ -113,7 +108,7 @@ describe("cron.bot-insights", () => {
       const insight = await prisma.botInsight.findUnique({
         where: { siteId: "site-cron-insights-2" },
       });
-      expect(insight?.content).toBe("ChatGPT visited 8 times this week.");
+      expect(insight?.content).toBe("No results found.");
     });
 
     it("re-upserts on second run (idempotent)", async () => {
@@ -123,7 +118,13 @@ describe("cron.bot-insights", () => {
           id: "site-cron-insights-3",
           domain: "idempotent.example.com",
           apiKey: "test-api-key-cron-insights-3",
-          owner: { create: { id: "user-cron-insights-3", email: "cron3@test.com", passwordHash: "test" } },
+          owner: {
+            create: {
+              id: "user-cron-insights-3",
+              email: "cron3@test.com",
+              passwordHash: "test",
+            },
+          },
           botVisits: {
             create: {
               botType: "Perplexity",
@@ -139,8 +140,8 @@ describe("cron.bot-insights", () => {
         },
       });
 
-      await callLoader(makeRequest("Bearer test-secret"));
-      await callLoader(makeRequest("Bearer test-secret"));
+      await makeRequest("test-cron-secret");
+      await makeRequest("test-cron-secret");
 
       expect(await prisma.botInsight.count()).toBe(1);
     });
