@@ -1,8 +1,6 @@
 import { Link } from "react-router";
 import remarkGfm from "remark-gfm";
 import { Streamdown } from "streamdown";
-import { twMerge } from "tailwind-merge";
-import Main from "~/components/ui/Main";
 import { generateApiDocsMarkdown } from "~/lib/api/docs.server";
 import { generateOpenApiSpec } from "~/lib/api/openapi";
 import type { Route } from "./+types/route";
@@ -28,8 +26,8 @@ export async function loader() {
 
 export default function ApiDocs({ loaderData }: Route.ComponentProps) {
   return (
-    <Main variant="prose">
-      <article className={twMerge("**:data-[streamdown=code-block]:my-0")}>
+    <main className="mx-auto w-full bg-white px-6 py-12">
+      <article className="mx-auto max-w-5xl">
         <Streamdown
           mode="static"
           remarkPlugins={[remarkGfm]}
@@ -44,11 +42,30 @@ export default function ApiDocs({ loaderData }: Route.ComponentProps) {
               ) : (
                 <a href={href}>{children}</a>
               ),
+            h3: ({ children }) => (
+              <h3 className="mt-8 border-t-2 border-t-gray-400 pt-8 font-bold text-2xl">
+                {children}
+              </h3>
+            ),
+            pre: ({ children }) => (
+              <pre className="overflow-x-auto bg-gray-100 p-4 text-black text-mono">
+                {children}
+              </pre>
+            ),
+            table: ({ children }) => <table className="">{children}</table>,
+            thead: ({ children }) => (
+              <thead className="border-b-2 border-b-gray-600">{children}</thead>
+            ),
+            code: ({ children }) => (
+              <code className="text-mono before:hidden after:hidden">
+                {children}
+              </code>
+            ),
           }}
         >
           {loaderData.markdown}
         </Streamdown>
       </article>
-    </Main>
+    </main>
   );
 }

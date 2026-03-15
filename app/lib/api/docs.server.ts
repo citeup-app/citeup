@@ -192,8 +192,6 @@ Authorization: Bearer YOUR_API_KEY
 
 Retrieve your API key from your [profile page](/profile).`);
 
-  sections.push("## Endpoints");
-
   for (const [path, pathItem] of Object.entries(spec.paths)) {
     const op = pathItem.get;
     if (!op) continue;
@@ -225,5 +223,5 @@ Retrieve your API key from your [profile page](/profile).`);
     sections.push(parts.join("\n\n"));
   }
 
-  return sections.join("\n\n---\n\n");
+  return sections.join("\n\n");
 }
