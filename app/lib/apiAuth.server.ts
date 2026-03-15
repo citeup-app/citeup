@@ -29,6 +29,12 @@ export async function verifySiteAccess({
   owner: { id: string; email: string };
   siteUsers: { user: { id: string; email: string } }[];
 }> {
+  const auth = request.headers.get("authorization");
+  if (!auth) throw new Response("Unauthorized", { status: 401 });
+  const [tokenType, token] = auth.split(/\s+/);
+  if (tokenType !== "Bearer")
+    throw new Response("Unauthorized", { status: 401 });
+
   const site = await prisma.site.findFirst({
     where: { domain },
     select: {
@@ -43,12 +49,6 @@ export async function verifySiteAccess({
     },
   });
   if (!site) throw new Response("Not found", { status: 404 });
-
-  const auth = request.headers.get("authorization");
-  if (!auth) throw new Response("Unauthorized", { status: 401 });
-  const [tokenType, token] = auth.split(/\s+/);
-  if (tokenType !== "Bearer")
-    throw new Response("Unauthorized", { status: 401 });
 
   const tokenMatch =
     site.owner.apiKey === token ||
