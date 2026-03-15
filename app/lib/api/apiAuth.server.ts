@@ -7,7 +7,7 @@ export async function requireAdminApiKey(request: Request): Promise<void> {
   const [tokenType, token] = auth.split(/\s+/);
   if (tokenType !== "Bearer")
     throw new Response("Unauthorized", { status: 401 });
-  if (token !== envVars.ADMIN_API_SECRET)
+  if (!envVars.ADMIN_API_SECRET || token !== envVars.ADMIN_API_SECRET)
     throw new Response("Unauthorized", { status: 401 });
 }
 
