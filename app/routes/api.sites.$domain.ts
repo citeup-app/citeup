@@ -1,5 +1,5 @@
-import { verifySiteAccess } from "~/lib/apiAuth.server";
-import { SiteSchema } from "~/lib/api-schemas";
+import { verifySiteAccess } from "~/lib/api/apiAuth.server";
+import { SiteSchema } from "~/lib/api/schemas";
 import type { Route } from "./+types/api.sites.$domain";
 
 export async function loader({ request, params }: Route.LoaderArgs) {

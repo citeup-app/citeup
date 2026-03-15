@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import { requireAdminApiKey, verifySiteAccess } from "~/lib/apiAuth.server";
+import { requireAdminApiKey, verifySiteAccess } from "~/lib/api/apiAuth.server";
 import { hashPassword } from "~/lib/auth.server";
 import envVars from "~/lib/envVars";
 import prisma from "~/lib/prisma.server";

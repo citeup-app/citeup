@@ -1,5 +1,5 @@
-import { verifySiteAccess } from "~/lib/apiAuth.server";
-import { RunDetailSchema } from "~/lib/api-schemas";
+import { verifySiteAccess } from "~/lib/api/apiAuth.server";
+import { RunDetailSchema } from "~/lib/api/schemas";
 import prisma from "~/lib/prisma.server";
 import type { Route } from "./+types/api.sites.$domain_.runs.$runId";
 

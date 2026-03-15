@@ -1,9 +1,5 @@
 import prisma from "~/lib/prisma.server";
-import envVars from "./envVars";
-
-function unauthorized() {
-  return Response.json({ error: "Unauthorized" }, { status: 401 });
-}
+import envVars from "../envVars";
 
 export async function requireAdminApiKey(request: Request): Promise<void> {
   const auth = request.headers.get("authorization");

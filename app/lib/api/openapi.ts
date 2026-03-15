@@ -1,14 +1,10 @@
 // app/lib/openapi.ts
 import {
-  OpenApiGeneratorV31,
   OpenAPIRegistry,
+  OpenApiGeneratorV31,
 } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
-import {
-  RunDetailSchema,
-  RunsSchema,
-  SiteSchema,
-} from "~/lib/api-schemas";
+import { RunDetailSchema, RunsSchema, SiteSchema } from "~/lib/api/schemas";
 
 const registry = new OpenAPIRegistry();
 
@@ -35,7 +31,9 @@ registry.registerPath({
       content: { "application/json": { schema: SiteSchema } },
     },
     401: { description: "Unauthorized — missing or invalid API key" },
-    403: { description: "Forbidden — API key does not have access to this site" },
+    403: {
+      description: "Forbidden — API key does not have access to this site",
+    },
     404: { description: "Site not found" },
   },
 });
@@ -52,15 +50,10 @@ registry.registerPath({
       domain: z.string().openapi({ example: "example.com" }),
     }),
     query: z.object({
-      since: z
-        .string()
-        .datetime()
-        .optional()
-        .openapi({
-          example: "2024-01-01T00:00:00.000Z",
-          description:
-            "Return only runs created after this ISO 8601 timestamp",
-        }),
+      since: z.string().datetime().optional().openapi({
+        example: "2024-01-01T00:00:00.000Z",
+        description: "Return only runs created after this ISO 8601 timestamp",
+      }),
     }),
   },
   responses: {
@@ -78,8 +71,7 @@ registry.registerPath({
   method: "get",
   path: "/api/sites/{domain}/runs/{runId}",
   summary: "Get run detail",
-  description:
-    "Returns a single citation run with all queries and citations.",
+  description: "Returns a single citation run with all queries and citations.",
   security: [{ BearerAuth: [] }],
   request: {
     params: z.object({
@@ -103,7 +95,7 @@ export function generateOpenApiSpec() {
   return generator.generateDocument({
     openapi: "3.1.0",
     info: {
-      title: "Cite.me.in Monitoring API",
+      title: "cite.me.in Monitoring API",
       version: "1.0.0",
       description:
         "Monitor your brand's visibility in AI-generated responses. Authenticate with your API key from the profile page.",
