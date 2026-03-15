@@ -1,9 +1,7 @@
-import type { ACCOUNT_LIMITS } from "./costConfig";
-
 export class UsageLimitExceededError extends Error {
   public readonly current: number;
   public readonly limit: number;
-  public readonly timeWindow: keyof typeof ACCOUNT_LIMITS;
+  public readonly timeWindow: string;
 
   constructor({
     current,
@@ -12,7 +10,7 @@ export class UsageLimitExceededError extends Error {
   }: {
     current: number;
     limit: number;
-    timeWindow: keyof typeof ACCOUNT_LIMITS;
+    timeWindow: string;
   }) {
     super(`${timeWindow} cost limit exceeded: ${current} / ${limit}`);
     this.current = current;

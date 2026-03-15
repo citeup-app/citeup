@@ -11,18 +11,12 @@ export default defineConfig(async (config) =>
     resolve: {
       dedupe: ["react", "react-dom", "react-router"],
     },
-    plugins: [
-      tailwindcss(),
-      reactRouter(),
-      tsconfigPaths(),
-    ],
+    plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
     ssr: {
       noExternal: [
         // NOTE: recommended by the Streamdown docs
         // @see https://streamdown.ai/docs/faq#why-do-i-get-a-css-loading-error-when-using-streamdown-with-vite-ssr
         "streamdown",
-        // NOTE: without rehype-harden here we get "Cannot require() ES Module in a cycle."
-        "rehype-harden",
       ],
     },
     server: {

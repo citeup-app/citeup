@@ -1,0 +1,32 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "app/components/layout/PageLayout.tsx",
+    "app/components/ui/*.tsx",
+    "app/emails/sendEmails.server.tsx",
+    "app/global.css",
+    "test/helpers/serverWorker.ts",
+    "vercel.ts"
+  ],
+  "project": [
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "test/**/*.ts",
+    "scripts/**/*.ts"
+  ],
+  "ignoreDependencies": [
+    "@prisma/client",
+    "@secretlint/secretlint-rule-preset-recommend"
+  ],
+  "ignoreIssues": {
+    "app/lib/api/schemas.ts": [
+      "exports"
+    ],
+    "app/lib/html/parseHTML.ts": [
+      "exports"
+    ],
+    "app/lib/relativeTime.ts": [
+      "exports"
+    ]
+  }
+}

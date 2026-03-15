@@ -1,7 +1,7 @@
 import { createAnthropic } from "@ai-sdk/anthropic";
 import envVars from "~/lib/envVars";
 
-export const anthropic = createAnthropic({
+const anthropic = createAnthropic({
   apiKey: envVars.ANTHROPIC_API_KEY,
 });
 

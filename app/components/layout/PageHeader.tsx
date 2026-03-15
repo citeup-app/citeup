@@ -1,12 +1,8 @@
 import { last } from "es-toolkit";
-import { MenuIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { Link, NavLink, type UIMatch, useMatches } from "react-router";
+import { NavLink, type UIMatch, useMatches } from "react-router";
 import { twMerge } from "tailwind-merge";
-import { Button } from "~/components/ui/Button";
 import AccountMenu from "./AccountMenu";
 import CiteMeInLogo from "./CiteMeInLogo";
-import type { HeaderLink } from "./PageLayout";
 
 export default function PageHeader() {
   const matches = useMatches() as UIMatch<unknown, { hideHeader?: boolean }>[];
@@ -55,61 +51,5 @@ function HeaderLinks() {
         </NavLink>
       ))}
     </nav>
-  );
-}
-
-export function DropdownMenu({ links }: { links: HeaderLink[] }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () =>
-        document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [isOpen]);
-
-  return (
-    <div className="relative" ref={dropdownRef}>
-      <Button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2"
-        aria-expanded={isOpen}
-        aria-haspopup="true"
-        variant="ghost"
-      >
-        <MenuIcon className="h-4 w-4" />
-        <span className="max-w-[200px] truncate">Menu</span>
-      </Button>
-
-      {isOpen && (
-        <menu className="absolute top-10 right-0 z-50 mt-2 w-48 rounded-base border-2 border-black bg-white py-1 shadow-[4px_4px_0px_0px_black]">
-          {links.map((link, index) => (
-            <li key={index.toString()}>
-              <Link
-                to={link.to}
-                className="block w-full px-4 py-2 text-left font-medium text-black transition-colors hover:bg-[hsl(47,100%,95%)] hover:text-[#F59E0B]"
-                onClick={() => setIsOpen(false)}
-                viewTransition
-              >
-                {link.label}
-              </Link>
-            </li>
-          ))}
-        </menu>
-      )}
-    </div>
   );
 }

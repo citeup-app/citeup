@@ -2,7 +2,6 @@ import { Temporal } from "@js-temporal/polyfill";
 import { ms } from "convert";
 import debug from "debug";
 import { delay, groupBy, sortBy, sumBy, uniqBy } from "es-toolkit";
-import dns from "node:dns";
 import { generateApiKey } from "random-password-toolkit";
 import parseHTMLTree, { getBodyContent } from "~/lib/html/parseHTML";
 import type { Site } from "~/prisma";
@@ -55,28 +54,6 @@ export function extractDomain(url: string): string | null {
     return hostname.toLowerCase();
   } catch {
     return null;
-  }
-}
-
-/**
- * Verify that a domain has DNS records. Throws an error if the domain has no DNS records.
- *
- * @param domain - The domain to verify.
- * @throws {Error} If the domain has no DNS records.
- */
-export async function verifyDomain(domain: string): Promise<void> {
-  try {
-    await Promise.race([
-      Promise.any([
-        dns.promises.resolve(domain, "A"),
-        dns.promises.resolve(domain, "CNAME"),
-      ]),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("timeout")), 5_000),
-      ),
-    ]);
-  } catch {
-    throw new Error(`No DNS records found for ${domain}. Is the domain live?`);
   }
 }
 
@@ -308,10 +285,7 @@ export async function loadSitesWithMetrics(userId: string): Promise<
     },
     orderBy: [{ domain: "asc" }, { createdAt: "desc" }],
     where: {
-      OR: [
-        { ownerId: userId },
-        { siteUsers: { some: { userId } } },
-      ],
+      OR: [{ ownerId: userId }, { siteUsers: { some: { userId } } }],
     },
   });
 
