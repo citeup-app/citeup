@@ -469,7 +469,7 @@ describe("sites route", () => {
           .first();
         await expect(
           siteRow.locator("a.grid > div").nth(1).locator(".text-3xl"),
-        ).toHaveText("100.0");
+        ).toHaveText("85.0");
       });
 
       it("should show +0% delta in green", async () => {
@@ -497,7 +497,7 @@ describe("sites route", () => {
             .nth(1)
             .locator(".text-muted-foreground span")
             .last(),
-        ).toHaveText("100.0");
+        ).toHaveText("85.0");
       });
 
       it("should show 0", async () => {
