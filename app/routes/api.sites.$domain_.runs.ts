@@ -1,11 +1,9 @@
-import { requireUserByApiKey } from "~/lib/api-auth.server";
+import { verifySiteAccess } from "~/lib/apiAuth.server";
 import prisma from "~/lib/prisma.server";
-import { requireSiteAccess } from "~/lib/sites.server";
 import type { Route } from "./+types/api.sites.$domain_.runs";
 
 export async function loader({ request, params }: Route.LoaderArgs) {
-  const authUser = await requireUserByApiKey(request);
-  const site = await requireSiteAccess(params.domain, authUser.id);
+  const site = await verifySiteAccess({ domain: params.domain, request });
 
   const url = new URL(request.url);
   const since = url.searchParams.get("since");

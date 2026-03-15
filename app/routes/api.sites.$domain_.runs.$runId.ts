@@ -1,11 +1,9 @@
-import { requireUserByApiKey } from "~/lib/api-auth.server";
+import { verifySiteAccess } from "~/lib/apiAuth.server";
 import prisma from "~/lib/prisma.server";
-import { requireSiteAccess } from "~/lib/sites.server";
 import type { Route } from "./+types/api.sites.$domain_.runs.$runId";
 
 export async function loader({ request, params }: Route.LoaderArgs) {
-  const authUser = await requireUserByApiKey(request);
-  const site = await requireSiteAccess(params.domain, authUser.id);
+  const site = await verifySiteAccess({ domain: params.domain, request });
 
   const run = await prisma.citationQueryRun.findFirst({
     where: { id: params.runId, siteId: site.id },
@@ -27,6 +25,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     },
   });
 
-  if (!run) return Response.json({ error: "Not found" }, { status: 404 });
+  if (!run) throw new Response("Not found", { status: 404 });
   return Response.json(run);
 }

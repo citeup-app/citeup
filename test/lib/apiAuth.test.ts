@@ -1,6 +1,7 @@
-import { beforeAll, afterAll, describe, expect, it } from "vitest";
-import { requireAdminApiKey, requireUserByApiKey } from "~/lib/api-auth.server";
+import { beforeAll, describe, expect, it } from "vitest";
+import { requireAdminApiKey, verifySiteAccess } from "~/lib/apiAuth.server";
 import { hashPassword } from "~/lib/auth.server";
+import envVars from "~/lib/envVars";
 import prisma from "~/lib/prisma.server";
 
 const TEST_ADMIN_SECRET = "test-admin-secret-xyz";
@@ -13,11 +14,13 @@ function makeRequest(token?: string) {
 
 describe("requireAdminApiKey", () => {
   beforeAll(() => {
-    process.env.ADMIN_API_SECRET = TEST_ADMIN_SECRET;
+    envVars.ADMIN_API_SECRET = TEST_ADMIN_SECRET;
   });
 
   it("resolves when token matches ADMIN_API_SECRET", async () => {
-    await expect(requireAdminApiKey(makeRequest(TEST_ADMIN_SECRET))).resolves.toBeUndefined();
+    await expect(
+      requireAdminApiKey(makeRequest(TEST_ADMIN_SECRET)),
+    ).resolves.toBeUndefined();
   });
 
   it("throws 401 Response when token is wrong", async () => {
@@ -33,8 +36,9 @@ describe("requireAdminApiKey", () => {
   });
 });
 
-describe("requireUserByApiKey", () => {
+describe("verifySiteAccess", () => {
   const userId = "api-auth-test-user-1";
+  const siteId = "test-site-1";
   const userApiKey = "cite.me.in_test_auth_key_abc123xyz";
 
   beforeAll(async () => {
@@ -45,29 +49,41 @@ describe("requireUserByApiKey", () => {
         email: "api-auth-test@test.example",
         passwordHash: await hashPassword("password"),
         apiKey: userApiKey,
+        ownedSites: {
+          create: {
+            id: siteId,
+            domain: "test.example",
+            apiKey: userApiKey,
+          },
+        },
       },
       update: { apiKey: userApiKey },
     });
   });
 
-  afterAll(async () => {
-    await prisma.user.delete({ where: { id: userId } });
+  it("returns site when token matches", async () => {
+    const site = await verifySiteAccess({
+      domain: "test.example",
+      request: makeRequest(userApiKey),
+    });
+    expect(site.id).toBe(siteId);
   });
 
-  it("returns user when token matches", async () => {
-    const user = await requireUserByApiKey(makeRequest(userApiKey));
-    expect(user.id).toBe(userId);
+  it("throws 404 Response when token is unknown", async () => {
+    await expect(
+      verifySiteAccess({
+        domain: "test.example",
+        request: makeRequest("unknown-key"),
+      }),
+    ).rejects.toThrow(Response);
   });
 
-  it("throws 401 Response when token is unknown", async () => {
-    const err = await requireUserByApiKey(makeRequest("unknown-key")).catch((e) => e);
-    expect(err).toBeInstanceOf(Response);
-    expect((err as Response).status).toBe(401);
-  });
-
-  it("throws 401 Response when no Authorization header", async () => {
-    const err = await requireUserByApiKey(makeRequest()).catch((e) => e);
-    expect(err).toBeInstanceOf(Response);
-    expect((err as Response).status).toBe(401);
+  it("throws 404 Response when domain is unknown", async () => {
+    await expect(
+      verifySiteAccess({
+        domain: "unknown.example",
+        request: makeRequest(),
+      }),
+    ).rejects.toThrow(Response);
   });
 });

@@ -1,4 +1,4 @@
-import { requireAdminApiKey } from "~/lib/api-auth.server";
+import { requireAdminApiKey } from "~/lib/apiAuth.server";
 import prisma from "~/lib/prisma.server";
 import type { Route } from "./+types/api.admin.users";
 
