@@ -43,7 +43,7 @@ describe("generateSiteQueries", () => {
     });
   });
 
-  it("returns 9 queries across 3 groups", async () => {
+  it("should return 9 queries across 3 groups", async () => {
     const { generateText } = await import("ai");
     // biome-ignore lint/suspicious/noExplicitAny: test mock
     vi.mocked(generateText).mockResolvedValue({ output: MOCK_QUERIES } as any);
@@ -55,7 +55,7 @@ describe("generateSiteQueries", () => {
     ).toEqual(MOCK_QUERIES);
   });
 
-  it("propagates errors from generateText", async () => {
+  it("should propagate errors from generateText", async () => {
     const { generateText } = await import("ai");
     vi.mocked(generateText).mockRejectedValue(new Error("API error"));
 

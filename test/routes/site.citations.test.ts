@@ -120,7 +120,7 @@ function daysAgo(n: number): Date {
 // ---------------------------------------------------------------------------
 
 describe("unauthenticated access", () => {
-  it("redirects to /sign-in", async () => {
+  it("should redirect to /sign-in", async () => {
     const response = await fetch(`http://localhost:${port}/site/some-id`, {
       redirect: "manual",
     });
@@ -183,7 +183,7 @@ describe("site page", () => {
     }
   });
 
-  it("should match visually", { timeout: 30_000 }, async () => {
+  it("should match visually", async () => {
     await signIn(user.id);
     const page = await goto(`/site/${siteDomain}/citations`);
     // Strip chart SVGs: Recharts computes floating-point coordinates from

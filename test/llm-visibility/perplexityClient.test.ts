@@ -15,7 +15,7 @@ vi.mock("ai", () => ({
 }));
 
 describe("queryPerplexity", () => {
-  it("returns citations from URL sources and the response text", async () => {
+  it("should return citations from URL sources and the response text", async () => {
     vi.mocked(generateText).mockResolvedValue({
       sources: [
         { type: "source", sourceType: "url", url: "https://example.com" },
@@ -38,7 +38,7 @@ describe("queryPerplexity", () => {
     expect(result.extraQueries).toEqual([]);
   });
 
-  it("filters out non-URL sources", async () => {
+  it("should filter out non-URL sources", async () => {
     vi.mocked(generateText).mockResolvedValue({
       sources: [
         { type: "source", sourceType: "url", url: "https://example.com" },
@@ -56,7 +56,7 @@ describe("queryPerplexity", () => {
     expect(result.citations).toEqual(["https://example.com"]);
   });
 
-  it("returns empty citations when there are no sources", async () => {
+  it("should return empty citations when there are no sources", async () => {
     vi.mocked(generateText).mockResolvedValue({
       sources: [],
       text: "I don't know.",

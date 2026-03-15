@@ -19,7 +19,7 @@ vi.mock("ai", () => ({
 }));
 
 describe("queryGemini", () => {
-  it("returns citations resolved from redirect URLs and extraQueries", async () => {
+  it("should return citations resolved from redirect URLs and extraQueries", async () => {
     vi.mocked(generateText).mockResolvedValue({
       providerMetadata: {
         google: {
@@ -57,7 +57,7 @@ describe("queryGemini", () => {
     expect(result.extraQueries).toEqual(["capital of France"]);
   });
 
-  it("follows redirects when resolving citation URLs", async () => {
+  it("should follow redirects when resolving citation URLs", async () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValue({ url: "https://final.example.com" });
@@ -86,7 +86,7 @@ describe("queryGemini", () => {
     });
   });
 
-  it("returns empty citations and extraQueries when providerMetadata is absent", async () => {
+  it("should return empty citations and extraQueries when providerMetadata is absent", async () => {
     vi.stubGlobal("fetch", vi.fn());
     vi.mocked(generateText).mockResolvedValue({
       providerMetadata: undefined,

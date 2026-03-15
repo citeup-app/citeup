@@ -29,7 +29,7 @@ beforeEach(async () => {
 });
 
 describe("recordUsageEvent", () => {
-  it("inserts a UsageEvent row with computed cost", async () => {
+  it("should insert a UsageEvent row with computed cost", async () => {
     await recordUsageEvent({
       siteId: SITE_ID,
       model: "claude-haiku-4-5-20251001",
@@ -49,11 +49,11 @@ describe("recordUsageEvent", () => {
 });
 
 describe("checkUsageLimits", () => {
-  it("passes when no events exist", async () => {
+  it("should pass when no events exist", async () => {
     await expect(checkUsageLimits(SITE_ID)).resolves.toBeUndefined();
   });
 
-  it("throws UsageLimitExceededError when hourly cost is exceeded", async () => {
+  it("should throw UsageLimitExceededError when hourly cost is exceeded", async () => {
     // Insert enough events to exceed $2.00/hour limit
     // claude-haiku: $1/M input + $5/M output; 500k output = $2.50 > $2 limit
     await recordUsageEvent({
@@ -68,7 +68,7 @@ describe("checkUsageLimits", () => {
     );
   });
 
-  it("throws with correct window and limitType", async () => {
+  it("should throw with correct window and limitType", async () => {
     await recordUsageEvent({
       siteId: SITE_ID,
       model: "claude-haiku-4-5-20251001",

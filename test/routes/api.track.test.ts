@@ -50,14 +50,14 @@ describe("api.track", () => {
   });
 
   describe("method handling", () => {
-    it("returns 405 for GET", async () => {
+    it("should return 405 for GET", async () => {
       const res = await fetch(BASE_URL);
       expect(res.status).toBe(405);
     });
   });
 
   describe("validation", () => {
-    it("returns 400 for invalid JSON", async () => {
+    it("should return 400 for invalid JSON", async () => {
       const res = await fetch(BASE_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -68,7 +68,7 @@ describe("api.track", () => {
       expect(body.tracked).toBe(false);
     });
 
-    it("returns 400 when url is missing", async () => {
+    it("should return 400 when url is missing", async () => {
       const res = await post({
         userAgent: "Googlebot/2.1",
         accept: "text/html",
@@ -79,7 +79,7 @@ describe("api.track", () => {
   });
 
   describe("tracking", () => {
-    it("includes CORS headers in response", async () => {
+    it("should include CORS headers in response", async () => {
       const res = await post(
         {
           url: "https://apitrack.example.com/",
@@ -92,7 +92,7 @@ describe("api.track", () => {
       expect(res.headers.get("access-control-allow-origin")).toBe("*");
     });
 
-    it("does not track a regular browser visit", async () => {
+    it("should not track a regular browser visit", async () => {
       const res = await post(
         {
           url: "https://apitrack.example.com/",
@@ -109,7 +109,7 @@ describe("api.track", () => {
       expect(body.reason).toBe("not a bot");
     });
 
-    it("returns 403 when domain is not in the account", async () => {
+    it("should return 403 when domain is not in the account", async () => {
       const res = await post(
         {
           url: "https://unknown-domain-xyz.example.com/",
@@ -122,7 +122,7 @@ describe("api.track", () => {
       expect(res.status).toBe(403);
     });
 
-    it("tracks a bot visit for a known domain", async () => {
+    it("should track a bot visit for a known domain", async () => {
       const res = await post(
         {
           url: "https://apitrack.example.com/about",
@@ -146,7 +146,7 @@ describe("api.track", () => {
       expect(record?.count).toBe(1);
     });
 
-    it("increments count on repeated visit", async () => {
+    it("should increment count on repeated visit", async () => {
       await post(
         {
           url: "https://apitrack.example.com/repeated",
@@ -174,7 +174,7 @@ describe("api.track", () => {
   });
 
   describe("auth", () => {
-    it("returns 403 when Authorization header is missing", async () => {
+    it("should return 403 when Authorization header is missing", async () => {
       const res = await post({
         url: "https://apitrack.example.com/",
         userAgent: "GPTBot/1.0",
@@ -182,7 +182,7 @@ describe("api.track", () => {
       expect(res.status).toBe(403);
     });
 
-    it("returns 403 when API key is wrong", async () => {
+    it("should return 403 when API key is wrong", async () => {
       const res = await post(
         { url: "https://apitrack.example.com/", userAgent: "GPTBot/1.0" },
         { Authorization: "Bearer wrong-key" },
@@ -190,7 +190,7 @@ describe("api.track", () => {
       expect(res.status).toBe(403);
     });
 
-    it("returns 403 when domain belongs to a different account", async () => {
+    it("should return 403 when domain belongs to a different account", async () => {
       const res = await post(
         { url: "https://other-apitrack.example.com/", userAgent: "GPTBot/1.0" },
         authHeader(),
@@ -198,9 +198,12 @@ describe("api.track", () => {
       expect(res.status).toBe(403);
     });
 
-    it("returns 200 with valid key and matching domain", async () => {
+    it("should return 200 with valid key and matching domain", async () => {
       const res = await post(
-        { url: "https://apitrack.example.com/auth-test", userAgent: "GPTBot/1.0" },
+        {
+          url: "https://apitrack.example.com/auth-test",
+          userAgent: "GPTBot/1.0",
+        },
         authHeader(),
       );
       expect(res.status).toBe(200);

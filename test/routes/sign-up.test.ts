@@ -7,7 +7,7 @@ import { goto, port } from "../helpers/launchBrowser";
 const EXISTING_EMAIL = "sign-up-existing@example.com";
 
 describe("sign-up route", () => {
-  it("shows the sign-up form", async () => {
+  it("should show the sign-up form", async () => {
     const page = await goto("/sign-up");
     await expect(
       page.getByRole("textbox", { name: "Email", exact: true }),
@@ -23,7 +23,7 @@ describe("sign-up route", () => {
     ).toBeVisible();
   });
 
-  it("shows error when password is too short", async () => {
+  it("should show error when password is too short", async () => {
     const page = await goto("/sign-up");
     await page
       .getByRole("textbox", { name: "Email", exact: true })
@@ -40,7 +40,7 @@ describe("sign-up route", () => {
     ).toBeVisible();
   });
 
-  it("shows error when passwords do not match", async () => {
+  it("should show error when passwords do not match", async () => {
     const page = await goto("/sign-up");
     await page
       .getByRole("textbox", { name: "Email", exact: true })
@@ -55,7 +55,7 @@ describe("sign-up route", () => {
     await expect(page.getByText("Passwords do not match")).toBeVisible();
   });
 
-  it("shows error for already-registered email", async () => {
+  it("should show error for already-registered email", async () => {
     await prisma.user.create({
       data: {
         id: "user-1",
@@ -80,7 +80,7 @@ describe("sign-up route", () => {
     ).toBeVisible();
   });
 
-  it("creates account and redirects to home", async () => {
+  it("should create account and redirect to home", async () => {
     const page = await goto("/sign-up");
     await page
       .getByRole("textbox", { name: "Email", exact: true })
@@ -103,7 +103,7 @@ describe("sign-up route", () => {
     });
   });
 
-  it("clicks the sign-in button and redirects to sign-in page", async () => {
+  it("should navigate to sign-in page when sign-in button is clicked", async () => {
     const page = await goto("/sign-up");
     await page.getByRole("link", { name: "Sign in" }).click();
     await page.waitForURL("**/sign-in");

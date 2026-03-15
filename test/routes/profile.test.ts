@@ -10,7 +10,7 @@ const EMAIL = "profile-test@example.com";
 const PASSWORD = "correct-password-123";
 
 describe("unauthenticated access", () => {
-  it("redirects to /sign-in", async () => {
+  it("should redirect to /sign-in", async () => {
     const response = await fetch(`http://localhost:${port}/profile`, {
       redirect: "manual",
     });
@@ -40,7 +40,7 @@ describe("profile route", () => {
       page = await goto("/profile");
     });
 
-    it("shows email tab with current email pre-filled", async () => {
+    it("should show email tab with current email pre-filled", async () => {
       await expect(page.getByRole("textbox", { name: "email" })).toBeVisible();
       await expect(page.getByRole("textbox", { name: "email" })).toHaveValue(
         EMAIL,
@@ -56,7 +56,7 @@ describe("profile route", () => {
       });
     });
 
-    it("shows error for invalid email", async () => {
+    it("should show error for invalid email", async () => {
       await page
         .getByRole("textbox", { name: "email" })
         .fill("invalid-email@here");
@@ -64,7 +64,7 @@ describe("profile route", () => {
       await expect(page.getByText("Enter a valid email address")).toBeVisible();
     });
 
-    it("shows error for already-used email", async () => {
+    it("should show error for already-used email", async () => {
       await prisma.user.create({
         data: {
           id: "user-2",
@@ -90,13 +90,13 @@ describe("profile route", () => {
         await page.getByRole("button", { name: "Update Email" }).click();
       });
 
-      it("shows success after correct email update", async () => {
+      it("should show success after correct email update", async () => {
         await expect(
           page.getByText("Email updated successfully"),
         ).toBeVisible();
       });
 
-      it("updates the user record with new email", async () => {
+      it("should update the user record with new email", async () => {
         const updatedUser = await prisma.user.findUniqueOrThrow({
           where: { id: user.id },
         });
@@ -113,7 +113,7 @@ describe("profile route", () => {
       await page.getByText("Password").click();
     });
 
-    it("shows password fields after switching to password tab", async () => {
+    it("should show password fields after switching to password tab", async () => {
       await expect(
         page.getByRole("textbox", { name: "Current password" }),
       ).toBeVisible();
@@ -134,7 +134,7 @@ describe("profile route", () => {
       });
     });
 
-    it("shows error for wrong current password", async () => {
+    it("should show error for wrong current password", async () => {
       await page
         .getByRole("textbox", { name: "Current password" })
         .fill("wrong-password");
@@ -150,7 +150,7 @@ describe("profile route", () => {
       ).toBeVisible();
     });
 
-    it("shows error when passwords do not match", async () => {
+    it("should show error when passwords do not match", async () => {
       await page
         .getByRole("textbox", { name: "Current password" })
         .fill(PASSWORD);
@@ -164,7 +164,7 @@ describe("profile route", () => {
       await expect(page.getByText("Passwords do not match")).toBeVisible();
     });
 
-    it("shows success after correct password change", async () => {
+    it("should show success after correct password change", async () => {
       await page
         .getByRole("textbox", { name: "Current password" })
         .fill(PASSWORD);
@@ -194,13 +194,13 @@ describe("profile route", () => {
         await page.getByRole("button", { name: "Change password" }).click();
       });
 
-      it("shows success after correct password change", async () => {
+      it("should show success after correct password change", async () => {
         await expect(
           page.getByText("Password changed successfully"),
         ).toBeVisible();
       });
 
-      it("updates the user record with new password", async () => {
+      it("should update the user record with new password", async () => {
         const updatedUser = await prisma.user.findUniqueOrThrow({
           where: { id: user.id },
         });

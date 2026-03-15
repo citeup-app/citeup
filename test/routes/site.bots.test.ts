@@ -59,7 +59,7 @@ function daysAgo(n: number): Date {
 // ---------------------------------------------------------------------------
 
 describe("unauthenticated access", () => {
-  it("redirects to /sign-in", async () => {
+  it("should redirect to /sign-in", async () => {
     const response = await fetch(`http://localhost:${port}/site/some-id/bots`, {
       redirect: "manual",
     });
@@ -101,11 +101,11 @@ describe("site bots page", () => {
       page = await goto(`/site/${siteDomain}/bots`);
     });
 
-    it("shows empty state message", async () => {
+    it("should show empty state message", async () => {
       await expect(page.getByText("No bot traffic recorded")).toBeVisible();
     });
 
-    it("shows site domain breadcrumb", async () => {
+    it("should show site domain breadcrumb", async () => {
       await expect(
         page.getByRole("link", { name: "bots-test.example.com" }),
       ).toBeVisible();
@@ -143,7 +143,7 @@ describe("site bots page", () => {
       );
     });
 
-    it("lists all bot types in the activity table", async () => {
+    it("should list all bot types in the activity table", async () => {
       await expect(
         page.getByRole("cell", { name: "Google", exact: true }),
       ).toBeVisible();
@@ -155,7 +155,7 @@ describe("site bots page", () => {
       ).toBeVisible();
     });
 
-    it("lists crawled paths", async () => {
+    it("should list crawled paths", async () => {
       await expect(
         page.getByRole("cell", { name: "/", exact: true }),
       ).toBeVisible();
@@ -167,7 +167,7 @@ describe("site bots page", () => {
       ).toBeVisible();
     });
 
-    it("shows MIME types in Accept Types table", async () => {
+    it("should show MIME types in Accept Types table", async () => {
       // Scope to the Accept Types table (column header "MIME Type") to avoid
       // matching the "text/html" cell in the Bot Activity accepts column.
       const mimeTable = page
@@ -211,7 +211,7 @@ describe("site bots page", () => {
       await prisma.botInsight.deleteMany({ where: { siteId } });
     });
 
-    it("shows the insight text", async () => {
+    it("should show the insight text", async () => {
       await expect(
         page.getByText(
           "ChatGPT visited 8 times this week, mostly your homepage.",
@@ -219,7 +219,7 @@ describe("site bots page", () => {
       ).toBeVisible();
     });
 
-    it("shows the Updated label", async () => {
+    it("should show the Updated label", async () => {
       await expect(page.getByText(/Updated/)).toBeVisible();
     });
   });

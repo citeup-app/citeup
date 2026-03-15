@@ -8,7 +8,7 @@ import { goto, port } from "../helpers/launchBrowser";
 import { signIn } from "../helpers/signIn";
 
 describe("unauthenticated access", () => {
-  it("redirects to /sign-in", async () => {
+  it("should redirect to /sign-in", async () => {
     const response = await fetch(
       `http://localhost:${port}/site/some-id/queries`,
       { redirect: "manual" },
@@ -51,23 +51,23 @@ describe("site queries page", () => {
       page = await goto(`/site/${siteDomain}/queries`);
     });
 
-    it("shows empty state message", async () => {
+    it("should show empty state message", async () => {
       await expect(page.getByText("No queries yet")).toBeVisible();
     });
 
-    it("shows site domain breadcrumb", async () => {
+    it("should show site domain breadcrumb", async () => {
       await expect(
         page.getByRole("link", { name: "queries-test.example.com" }),
       ).toBeVisible();
     });
 
-    it("shows Add group button", async () => {
+    it("should show Add group button", async () => {
       await expect(
         page.getByRole("button", { name: "Add group" }),
       ).toBeVisible();
     });
 
-    it("should match visually", { timeout: 30_000 }, async () => {
+    it("should match visually", async () => {
       await expect(page.locator("main")).toMatchVisual({
         name: "site.queries.empty",
         modify: (html) =>
@@ -105,14 +105,14 @@ describe("site queries page", () => {
       page = await goto(`/site/${siteDomain}/queries`);
     });
 
-    it("shows group names", async () => {
+    it("should show group names", async () => {
       await expect(page.locator('input[value="1. discovery"]')).toBeVisible();
       await expect(
         page.locator('input[value="2. active_search"]'),
       ).toBeVisible();
     });
 
-    it("shows query text", async () => {
+    it("should show query text", async () => {
       await expect(
         page.locator('input[value="How do I find short-term retail space?"]'),
       ).toBeVisible();
@@ -121,12 +121,12 @@ describe("site queries page", () => {
       ).toBeVisible();
     });
 
-    it("shows Add query button for each group", async () => {
+    it("should show Add query button for each group", async () => {
       const addQueryButtons = page.getByRole("button", { name: "Add query" });
       await expect(addQueryButtons).toHaveCount(2);
     });
 
-    it("should match visually", { timeout: 30_000 }, async () => {
+    it("should match visually", async () => {
       await expect(page.locator("main")).toMatchVisual({
         name: "site.queries",
         modify: (html) =>
@@ -139,7 +139,7 @@ describe("site queries page", () => {
   });
 
   describe("suggest action", () => {
-    it("completes gracefully when site has content", async () => {
+    it("should complete gracefully when site has content", async () => {
       const siteWithContent = await prisma.site.create({
         data: {
           id: "site-suggest-1",

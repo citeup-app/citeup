@@ -34,7 +34,7 @@ describe("trackBotVisit", () => {
     });
   });
 
-  it("ignores regular browser user agents", async () => {
+  it("should ignore regular browser user agents", async () => {
     await recordBotVisit(
       makeRequest(
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
@@ -44,7 +44,7 @@ describe("trackBotVisit", () => {
     expect(last).toBeNull();
   });
 
-  it("tracks a known bot by type", async () => {
+  it("should track a known bot by type", async () => {
     await recordBotVisit(
       makeRequest(
         "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
@@ -54,25 +54,25 @@ describe("trackBotVisit", () => {
     expect(last.botType).toBe("Google");
   });
 
-  it("skips upsert when no site matches the domain", async () => {
+  it("should skip upsert when no site matches the domain", async () => {
     await recordBotVisit(makeRequest("Googlebot/2.1", "https://example.com/"));
     const last = await prisma.botVisit.findFirst();
     expect(last).toBeNull();
   });
 
-  it("tracks an unknown bot as 'Other Bot'", async () => {
+  it("should track an unknown bot as 'Other Bot'", async () => {
     await recordBotVisit(makeRequest("custom-spider/1.0"));
     const last = await prisma.botVisit.findFirstOrThrow();
     expect(last.botType).toBe("Other Bot");
   });
 
-  it("ignores Better Stack uptime checks", async () => {
+  it("should ignore Better Stack uptime checks", async () => {
     await recordBotVisit(makeRequest("Better Stack Uptime Monitor/1.0 bot"));
     const last = await prisma.botVisit.findFirst();
     expect(last).toBeNull();
   });
 
-  it("records domain and path from request URL", async () => {
+  it("should record domain and path from request URL", async () => {
     await recordBotVisit(
       makeRequest(
         "Googlebot/2.1",
@@ -83,7 +83,7 @@ describe("trackBotVisit", () => {
     expect(last.path).toBe("/blog/post");
   });
 
-  it("parses Accept header into MIME type array, stripping quality values", async () => {
+  it("should parse Accept header into MIME type array, stripping quality values", async () => {
     await recordBotVisit(
       makeRequest(
         "Googlebot/2.1",
@@ -95,7 +95,7 @@ describe("trackBotVisit", () => {
     expect(last.accept).toEqual(["text/html", "application/xhtml+xml", "*/*"]);
   });
 
-  it("records referer if present", async () => {
+  it("should record referer if present", async () => {
     await recordBotVisit(
       makeRequest(
         "Googlebot/2.1",
@@ -108,7 +108,7 @@ describe("trackBotVisit", () => {
     expect(last.referer).toBe("https://google.com");
   });
 
-  it("does not record referer if it is the same as the request URL", async () => {
+  it("should not record referer if it is the same as the request URL", async () => {
     await recordBotVisit(
       makeRequest(
         "Googlebot/2.1",

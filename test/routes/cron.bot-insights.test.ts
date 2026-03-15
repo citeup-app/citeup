@@ -32,7 +32,7 @@ describe("cron.bot-insights", () => {
   });
 
   describe("site selection", () => {
-    it("returns empty results when no sites have recent visits", async () => {
+    it("should return empty results when no sites have recent visits", async () => {
       const oldDate = new Date(Date.now() - 48 * 60 * 60 * 1000);
       await prisma.site.create({
         data: {
@@ -67,7 +67,7 @@ describe("cron.bot-insights", () => {
       expect(await prisma.botInsight.count()).toBe(0);
     });
 
-    it("upserts BotInsight for site with a visit in the last 24h", async () => {
+    it("should upsert BotInsight for site with a visit in the last 24h", async () => {
       const recentDate = new Date();
       await prisma.site.create({
         data: {
@@ -111,7 +111,7 @@ describe("cron.bot-insights", () => {
       expect(insight?.content).toBe("No results found.");
     });
 
-    it("re-upserts on second run (idempotent)", async () => {
+    it("should re-upsert on second run (idempotent)", async () => {
       const recentDate = new Date();
       await prisma.site.create({
         data: {

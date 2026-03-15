@@ -4,7 +4,7 @@ import { port } from "~/test/helpers/launchBrowser";
 const BASE = `http://localhost:${port}`;
 
 describe("GET /api/openapi.json", () => {
-  it("returns 200 with a valid OpenAPI 3.1 document", async () => {
+  it("should return 200 with a valid OpenAPI 3.1 document", async () => {
     const res = await fetch(`${BASE}/api/openapi.json`);
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -15,7 +15,7 @@ describe("GET /api/openapi.json", () => {
     expect(body.paths).toHaveProperty("/api/sites/{domain}/runs/{runId}");
   });
 
-  it("documents BearerAuth security scheme", async () => {
+  it("should document BearerAuth security scheme", async () => {
     const res = await fetch(`${BASE}/api/openapi.json`);
     const body = await res.json();
     expect(body.components.securitySchemes.BearerAuth).toBeDefined();

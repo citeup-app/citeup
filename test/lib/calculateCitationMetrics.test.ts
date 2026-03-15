@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import calculateCitationMetrics from "~/lib/llm-visibility/calculateCitationMetrics";
 
 describe("calculateCitationMetrics", () => {
-  it("returns 0 citations and 0 score when no citations", () => {
+  it("should return 0 citations and 0 score when no citations", () => {
     const result = calculateCitationMetrics({
       domain: "example.com",
       citations: [],
@@ -14,7 +14,7 @@ describe("calculateCitationMetrics", () => {
     });
   });
 
-  it("calculates score: 50 for position 0, 10 for others", () => {
+  it("should calculate score: 50 for position 0, 10 for others", () => {
     const queries = [
       {
         citations: ["example.com"],
@@ -32,7 +32,7 @@ describe("calculateCitationMetrics", () => {
     expect(result.score).toBeCloseTo(66.67, 0.01); // 2/3 = 66.67%
   });
 
-  it("counts only citations mentioning the domain", () => {
+  it("should count only citations mentioning the domain", () => {
     const queries = [
       { citations: ["example.com"] },
       { citations: ["other.com"] },

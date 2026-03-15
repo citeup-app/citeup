@@ -3,7 +3,7 @@ import { describe, it } from "vitest";
 import { goto, port } from "../helpers/launchBrowser";
 
 describe("home page", () => {
-  it("shows the landing page hero", async () => {
+  it("should show the landing page hero", async () => {
     const page = await goto("/");
     await expect(
       page.getByRole("heading", { name: /Does ChatGPT mention/ }),
@@ -11,7 +11,7 @@ describe("home page", () => {
     await expect(page.getByText("The Search Console for AI")).toBeVisible();
   });
 
-  it("shows sign in and get started nav links when unauthenticated", async () => {
+  it("should show sign in and get started nav links when unauthenticated", async () => {
     const page = await goto("/");
     await expect(
       page.getByRole("navigation").getByRole("link", { name: "Sign in" }),
@@ -21,7 +21,7 @@ describe("home page", () => {
     ).toBeVisible();
   });
 
-  it("shows how it works section", async () => {
+  it("should show how it works section", async () => {
     const page = await goto("/");
     await expect(
       page.getByRole("heading", { name: "How it works" }),
@@ -31,7 +31,7 @@ describe("home page", () => {
     await expect(page.getByText("You see the citations")).toBeVisible();
   });
 
-  it("shows who it's for section", async () => {
+  it("should show who it's for section", async () => {
     const page = await goto("/");
     await expect(
       page.getByText("Built for anyone with an online presence"),
@@ -47,14 +47,14 @@ describe("home page", () => {
     ).toBeVisible();
   });
 
-  it("does not show the site header", async () => {
+  it("should not show the site header", async () => {
     const page = await goto("/");
     // The layout header (with nav links like Blog, Pricing) should be hidden;
     // only the landing nav rendered inline by the route should be visible.
     await expect(page.locator("header")).toHaveCount(0);
   });
 
-  it("shows the footer", async () => {
+  it("should show the footer", async () => {
     const page = await goto("/");
     await expect(page.locator("footer")).toBeVisible();
   });
@@ -66,7 +66,7 @@ describe("home page", () => {
     });
   });
 
-  it("sign-up CTA navigates to sign-up page", async () => {
+  it("should navigate to sign-up page when sign-up CTA is clicked", async () => {
     const page = await goto("/");
     await page.getByRole("link", { name: "Start monitoring — free" }).click();
     await page.waitForURL(`http://localhost:${port}/sign-up`);

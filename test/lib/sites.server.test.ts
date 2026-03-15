@@ -10,29 +10,29 @@ vi.mock("node:dns", () => ({
 }));
 
 describe("extractDomain", () => {
-  it("extracts hostname from full URL", () => {
+  it("should extract hostname from full URL", () => {
     expect(extractDomain("https://example.com/path?q=1")).toBe("example.com");
   });
 
-  it("extracts hostname when scheme is missing", () => {
+  it("should extract hostname when scheme is missing", () => {
     expect(extractDomain("example.com")).toBe("example.com");
   });
 
-  it("returns null for localhost", () => {
+  it("should return null for localhost", () => {
     expect(extractDomain("http://localhost:3000")).toBeNull();
   });
 
-  it("returns null for bare IP address", () => {
+  it("should return null for bare IP address", () => {
     expect(extractDomain("http://192.168.1.1")).toBeNull();
   });
 
-  it("returns null for unparseable input", () => {
+  it("should return null for unparseable input", () => {
     expect(extractDomain("not a url at all !!")).toBeNull();
   });
 });
 
 describe("fetchPageContent", () => {
-  it("returns extracted text from HTML", async () => {
+  it("should return extracted text from HTML", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
@@ -47,7 +47,7 @@ describe("fetchPageContent", () => {
     expect(content).toContain("Hello world");
   });
 
-  it("returns null when response is not ok", async () => {
+  it("should return null when response is not ok", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({ ok: false, text: async () => "" }),
@@ -57,7 +57,7 @@ describe("fetchPageContent", () => {
     ).rejects.toThrow("I couldn't fetch the main page of example.com");
   });
 
-  it("returns null on network error", async () => {
+  it("should return null on network error", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("network")));
     expect(
       fetchSiteContent({ domain: "example.com", maxWords: 1000 }),

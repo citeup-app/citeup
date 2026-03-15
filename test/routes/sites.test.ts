@@ -9,7 +9,7 @@ import { goto } from "../helpers/launchBrowser";
 import { signIn } from "../helpers/signIn";
 
 describe("unauthenticated access", () => {
-  it("redirects to /sign-in", async () => {
+  it("should redirect to /sign-in", async () => {
     const page = await goto("/sites");
     expect(page.url()).toContain("/sign-in");
   });
@@ -33,6 +33,7 @@ describe("sites route", () => {
 
   describe("empty state", () => {
     it("should show URL input and descriptive text", async () => {
+      const page = await goto("/sites");
       await expect(
         page.getByRole("textbox", { name: "Website URL or domain" }),
       ).toBeVisible();
@@ -303,7 +304,7 @@ describe("sites route", () => {
         page = await goto("/sites");
       });
 
-      it("shows no delta badge", async () => {
+      it("should show no delta badge", async () => {
         const siteRow = page
           .locator("div")
           .filter({ hasText: "delta-test.com" })
@@ -360,7 +361,7 @@ describe("sites route", () => {
         page = await goto("/sites");
       });
 
-      it("shows citation count", async () => {
+      it("should show citation count", async () => {
         const siteRow = page
           .locator("div")
           .filter({ hasText: "delta-test.com" })
@@ -368,7 +369,7 @@ describe("sites route", () => {
         await expect(siteRow.getByText("20", { exact: true })).toBeVisible();
       });
 
-      it("shows no delta badge", async () => {
+      it("should show no delta badge", async () => {
         const siteRow = page
           .locator("div")
           .filter({ hasText: "delta-test.com" })
@@ -423,7 +424,7 @@ describe("sites route", () => {
         });
       });
 
-      it("citations: shows current count in large text", async () => {
+      it("should show current count in large text", async () => {
         const siteRow = page
           .locator("div")
           .filter({ hasText: "delta-test.com" })
@@ -433,7 +434,7 @@ describe("sites route", () => {
         ).toHaveText("10");
       });
 
-      it("citations: shows -50% delta in red", async () => {
+      it("should show -50% delta in red", async () => {
         const siteRow = page
           .locator("div")
           .filter({ hasText: "delta-test.com" })
@@ -447,7 +448,7 @@ describe("sites route", () => {
         await expect(badge).toHaveClass(/text-red-600/);
       });
 
-      it("citations: shows previous count in small text", async () => {
+      it("should show previous count in small text", async () => {
         const siteRow = page
           .locator("div")
           .filter({ hasText: "delta-test.com" })
@@ -461,7 +462,7 @@ describe("sites route", () => {
         ).toHaveText("20");
       });
 
-      it("score: shows current score in large text", async () => {
+      it("should show current score in large text", async () => {
         const siteRow = page
           .locator("div")
           .filter({ hasText: "delta-test.com" })
@@ -471,7 +472,7 @@ describe("sites route", () => {
         ).toHaveText("100.0");
       });
 
-      it("score: shows +0% delta in green", async () => {
+      it("should show +0% delta in green", async () => {
         const siteRow = page
           .locator("div")
           .filter({ hasText: "delta-test.com" })
@@ -485,7 +486,7 @@ describe("sites route", () => {
         await expect(badge).toHaveClass(/text-green-700/);
       });
 
-      it("score: shows previous score in small text", async () => {
+      it("should show previous score in small text", async () => {
         const siteRow = page
           .locator("div")
           .filter({ hasText: "delta-test.com" })
@@ -499,7 +500,7 @@ describe("sites route", () => {
         ).toHaveText("100.0");
       });
 
-      it("bot visits: shows 0", async () => {
+      it("should show 0", async () => {
         const siteRow = page
           .locator("div")
           .filter({ hasText: "delta-test.com" })
@@ -509,7 +510,7 @@ describe("sites route", () => {
         ).toHaveText("0");
       });
 
-      it("unique bots: shows 0", async () => {
+      it("should show 0", async () => {
         const siteRow = page
           .locator("div")
           .filter({ hasText: "delta-test.com" })

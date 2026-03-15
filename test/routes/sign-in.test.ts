@@ -18,7 +18,7 @@ describe("sign-in route", () => {
     });
   });
 
-  it("shows the sign-in form", async () => {
+  it("should show the sign-in form", async () => {
     const page = (await goto("/sign-in")).locator("main");
     await expect(
       page.getByRole("textbox", { name: "Email", exact: true }),
@@ -29,7 +29,7 @@ describe("sign-in route", () => {
     await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
   });
 
-  it("shows error for wrong credentials", async () => {
+  it("should show error for wrong credentials", async () => {
     const page = (await goto("/sign-in")).locator("main");
     await page.getByRole("textbox", { name: "Email", exact: true }).fill(EMAIL);
     await page
@@ -41,7 +41,7 @@ describe("sign-in route", () => {
     ).toBeVisible();
   });
 
-  it("redirects to home on successful sign-in", async () => {
+  it("should redirect to home on successful sign-in", async () => {
     const page = await goto("/sign-in");
     await page
       .locator("main")
@@ -63,14 +63,14 @@ describe("sign-in route", () => {
     });
   });
 
-  it("clicks the sign-up button and redirects to sign-up page", async () => {
+  it("should navigate to sign-up page when sign-up button is clicked", async () => {
     const page = await goto("/sign-in");
     await page.getByRole("link", { name: "Sign up" }).click();
     await page.waitForURL("**/sign-up");
     expect(new URL(page.url()).pathname).toBe("/sign-up");
   });
 
-  it("clicks the forgot password button and redirects to password recovery page", async () => {
+  it("should navigate to password recovery page when forgot password button is clicked", async () => {
     const page = await goto("/sign-in");
     await page.getByRole("link", { name: "Forgot your password?" }).click();
     await page.waitForURL("**/password-recovery");

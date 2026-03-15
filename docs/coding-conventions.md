@@ -126,6 +126,7 @@ logger("[%s:%s] Failed: %o", site.id, platform, error);
 
 ## Testing
 
+- Test name starts with "should", eg `it("should receive status code 200", async () => { ... })`
 - Single test file: `vitest run test/routes/home.test.ts`
 - `test/routes/` = Playwright browser tests; files with only `fetch` calls = HTTP tests; `test/llm-visibility/` = LLM integration (needs real API keys in `.env`)
 - Prefer integration tests against a real DB over mocked unit tests

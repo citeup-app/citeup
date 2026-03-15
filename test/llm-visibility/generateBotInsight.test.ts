@@ -10,7 +10,7 @@ vi.mock("~/lib/llm-visibility/anthropic", () => ({
 describe("generateBotInsight", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("returns the text from generateText", async () => {
+  it("should return the text from generateText", async () => {
     vi.mocked(generateText).mockResolvedValue({
       text: "GPTBot visited 47 times this week.",
     } as never);
@@ -22,7 +22,7 @@ describe("generateBotInsight", () => {
     expect(result).toBe("GPTBot visited 47 times this week.");
   });
 
-  it("includes domain and bot stats in the user message", async () => {
+  it("should include domain and bot stats in the user message", async () => {
     vi.mocked(generateText).mockResolvedValue({ text: "insight" } as never);
 
     await generateBotInsight("mysite.com", [
@@ -35,14 +35,16 @@ describe("generateBotInsight", () => {
     const userMsg = messages.find((m) => m.role === "user");
     expect(userMsg?.content).toContain("Domain: mysite.com");
     expect(userMsg?.content).toContain("- Claude: 5 visits. Top pages: /about");
-    expect(userMsg?.content).toContain("- Perplexity: 12 visits. Top pages: /, /faq");
+    expect(userMsg?.content).toContain(
+      "- Perplexity: 12 visits. Top pages: /, /faq",
+    );
   });
 
-  it("propagates errors from generateText", async () => {
+  it("should propagate errors from generateText", async () => {
     vi.mocked(generateText).mockRejectedValue(new Error("API error"));
 
-    await expect(
-      generateBotInsight("example.com", []),
-    ).rejects.toThrow("API error");
+    await expect(generateBotInsight("example.com", [])).rejects.toThrow(
+      "API error",
+    );
   });
 });

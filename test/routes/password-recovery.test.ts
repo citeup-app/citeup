@@ -18,7 +18,7 @@ describe("password recovery route", () => {
     });
   });
 
-  it("shows the recovery form", async () => {
+  it("should show the recovery form", async () => {
     const page = await goto("/password-recovery");
     await expect(
       page.getByRole("textbox", { name: "Email", exact: true }),
@@ -28,7 +28,7 @@ describe("password recovery route", () => {
     ).toBeVisible();
   });
 
-  it("shows confirmation for unknown email without creating a token", async () => {
+  it("should show confirmation for unknown email without creating a token", async () => {
     const page = await goto("/password-recovery");
     await page
       .getByRole("textbox", { name: "Email", exact: true })
@@ -41,7 +41,7 @@ describe("password recovery route", () => {
     expect(count).toBe(0);
   });
 
-  it("shows confirmation for known email and creates a recovery token", async () => {
+  it("should show confirmation for known email and creates a recovery token", async () => {
     const page = await goto("/password-recovery");
     await page.getByRole("textbox", { name: "Email", exact: true }).fill(EMAIL);
     await page.getByRole("button", { name: "Send recovery link" }).click();
@@ -53,7 +53,7 @@ describe("password recovery route", () => {
     expect(token.usedAt).toBeNull();
   });
 
-  it("valid reset link signs user in and redirects to home", async () => {
+  it("should sign user in and redirect to home when valid reset link is clicked", async () => {
     const token = await prisma.passwordRecoveryToken.findFirstOrThrow({
       where: { user: { email: EMAIL }, usedAt: null },
       orderBy: { createdAt: "desc" },
@@ -62,7 +62,7 @@ describe("password recovery route", () => {
     expect(new URL(page.url()).pathname).toBe("/sites");
   });
 
-  it("expired reset link shows link-expired card", async () => {
+  it("should show link-expired card when expired reset link is clicked", async () => {
     const user = await prisma.user.findUniqueOrThrow({
       where: { email: EMAIL },
     });
@@ -84,7 +84,7 @@ describe("password recovery route", () => {
     });
   });
 
-  it("clicks the sign-in button and redirects to sign-in page", async () => {
+  it("should navigate to sign-in page when sign-in button is clicked", async () => {
     const page = await goto("/password-recovery");
     await page.getByRole("link", { name: "Back to sign in" }).click();
     await page.waitForURL("**/sign-in");
