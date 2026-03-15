@@ -14,7 +14,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     envVars.CRON_SECRET &&
     request.headers.get("authorization") !== `Bearer ${envVars.CRON_SECRET}`
   )
-    return new Response("Unauthorized", { status: 401 });
+    throw new Response("Unauthorized", { status: 401 });
 
   const sites = await prisma.site.findMany();
   logger(
