@@ -1,36 +1,22 @@
-import type { Route } from ".react-router/types/app/routes/+types/api.admin.users";
 import { beforeAll, describe, expect, it } from "vitest";
 import envVars from "~/lib/envVars";
 import prisma from "~/lib/prisma.server";
-import { loader } from "~/routes/api.admin.users";
+import { port } from "../helpers/launchBrowser";
 
 function makeRequest(token?: string) {
-  return new Request("http://localhost/api/admin/users", {
+  return fetch(`http://localhost:${port}/api/admin/users`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
 }
 
-async function callLoader(req: Request) {
-  try {
-    return await loader({
-      request: req,
-      params: {},
-      context: {},
-    } as Route.LoaderArgs);
-  } catch (error) {
-    if (error instanceof Response) return error;
-    throw error;
-  }
-}
-
 describe("api.admin.users", () => {
   it("should return 401 without a token", async () => {
-    const res = await callLoader(makeRequest());
+    const res = await makeRequest();
     expect(res.status).toBe(401);
   });
 
   it("should return 401 with a wrong token", async () => {
-    const res = await callLoader(makeRequest("wrong-token"));
+    const res = await makeRequest("wrong-token");
     expect(res.status).toBe(401);
   });
 
@@ -62,7 +48,7 @@ describe("api.admin.users", () => {
         },
       });
 
-      response = await callLoader(makeRequest(envVars.ADMIN_API_SECRET));
+      response = await makeRequest(envVars.ADMIN_API_SECRET);
     });
 
     it("should return 200", async () => {
